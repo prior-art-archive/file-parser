@@ -1,0 +1,30 @@
+{
+	"AWSEBDockerrunVersion": 2,
+	"containerDefinitions": [
+		{
+			"name": "tika",
+			"image": "logicalspark/docker-tikaserver",
+			"essential": true,
+			"memoryReservation": 1024,
+			"portMappings": [
+				{
+					"hostPort": 9998,
+					"containerPort": 9998
+				}
+			]
+		},
+		{
+			"name": "parser",
+			"image": "golang:alpine",
+			"essential": true,
+			"memoryReservation": 512,
+			"portMappings": [
+				{
+					"hostPort": 80,
+					"containerPort": 80
+				}
+			]
+		}
+	],
+	"volumes": []
+}
