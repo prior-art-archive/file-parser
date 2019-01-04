@@ -14,8 +14,8 @@
 			]
 		},
 		{
-			"name": "parser",
-			"image": "golang:alpine",
+			"name": "server",
+			"image": "joeltg/tika-server",
 			"essential": true,
 			"memoryReservation": 512,
 			"portMappings": [
