@@ -13,7 +13,7 @@ func main() {
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	var v interface{}
-	if r.Method == "POST" {
+	if r.Method == http.MethodPost {
 		decoder := json.NewDecoder(r.Body)
 		decoder.Decode(&v)
 		bytes, _ := json.MarshalIndent(v, "", "  ")
