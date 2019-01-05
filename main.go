@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -17,7 +18,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		decoder := json.NewDecoder(r.Body)
 		decoder.Decode(&v)
 		bytes, _ := json.MarshalIndent(v, "", "  ")
-		fmt.Fprint(w, string(bytes))
+		fmt.Fprint(os.Stderr, string(bytes))
 	} else {
 		url := r.URL.Query().Get("q")
 		fmt.Fprintf(w, "Page = %q\n", url)
