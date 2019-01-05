@@ -4,20 +4,22 @@
 		{
 			"name": "tika",
 			"image": "logicalspark/docker-tikaserver",
+			"command": [
+				"-enableUnsecureFeatures",
+				"-enableFileUrl",
+				"-spawnChild",
+				"-JXmx1g",
+				"-JXms256m"
+			],
 			"essential": true,
-			"memoryReservation": 1024,
-			"portMappings": [
-				{
-					"hostPort": 9998,
-					"containerPort": 9998
-				}
-			]
+			"memoryReservation": 1280
 		},
 		{
 			"name": "server",
 			"image": "joeltg/tika-server",
 			"essential": true,
 			"memoryReservation": 512,
+			"links": ["tika"],
 			"portMappings": [
 				{
 					"hostPort": 80,
