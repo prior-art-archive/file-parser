@@ -1,13 +1,13 @@
 package main
 
 type record struct {
-	AwsRegion    string    `json:"awsRegion"`
-	EventName    string    `json:"eventName"`
-	EventSource  string    `json:"eventSource"`
-	EventTime    string    `json:"eventTime"`
-	EventVersion string    `json:"eventVersion"`
-	S3           *s3       `json:"s3"`
-	UserIdentity *identity `json:"userIdentity"`
+	AwsRegion    string   `json:"awsRegion"`
+	EventName    string   `json:"eventName"`
+	EventSource  string   `json:"eventSource"`
+	EventTime    string   `json:"eventTime"`
+	EventVersion string   `json:"eventVersion"`
+	S3           s3       `json:"s3"`
+	UserIdentity identity `json:"userIdentity"`
 }
 
 type identity struct {
@@ -15,16 +15,16 @@ type identity struct {
 }
 
 type s3 struct {
-	Bucket          *bucket `json:"bucket"`
-	ConfigurationID string  `json:"configurationId"`
-	Object          *object `json:"object"`
-	S3SchemaVersion string  `json:"s3SchemaVersion"`
+	Bucket          bucket `json:"bucket"`
+	ConfigurationID string `json:"configurationId"`
+	Object          object `json:"object"`
+	S3SchemaVersion string `json:"s3SchemaVersion"`
 }
 
 type bucket struct {
-	Arn           string    `json:"arn"`
-	Name          string    `json:"name"`
-	OwnerIdentity *identity `json:"ownerIdentity"`
+	Arn           string   `json:"arn"`
+	Name          string   `json:"name"`
+	OwnerIdentity identity `json:"ownerIdentity"`
 }
 
 type object struct {

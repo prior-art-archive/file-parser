@@ -1,0 +1,554 @@
+{
+	"@context": {
+		"prov": "http://www.w3.org/ns/prov#",
+		"schema": "http://schema.org/",
+		"actions": { "@reverse": "schema:actionApplication" }
+	},
+	"@graph": [
+		{
+			"@id": "dweb:/ipfs/QmeCAr2JfGKT5SSRsYZXRTEuezA2nmrcjxghppqeCW6TyT",
+			"@type": "schema:MediaObject",
+			"schema:contentSize": "66707899B",
+			"schema:contentUrl": "https://gateway.underlay.store/ipfs/QmTgsfFDbYm3XT9c8qGm71TaKtgNrQzA7bBzn9psNaWBCR/tika-server-1.19.1.jar",
+			"schema:encodingFormat": "application/java-archive",
+			"schema:name": "tika-server-1.19.1.jar",
+			"schema:encodesCreativeWork": {
+				"@type": ["schema:SoftwareApplication", "prov:SoftwareAgent"],
+				"schema:associatedMedia": {
+					"@id": "dweb:/ipfs/QmeCAr2JfGKT5SSRsYZXRTEuezA2nmrcjxghppqeCW6TyT"
+				},
+				"schema:name": "Apache Tika",
+				"schema:url": "https://tika.apache.org/",
+				"schema:version": "1.19.1",
+				"actions": [
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/html",
+						"schema:httpMethod": "PUT",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getHTML",
+							"schema:valueReference": { "@id": "_:tika" }
+						},
+						"schema:name": "getHTML",
+						"schema:urlTemplate": "/tika"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/plain",
+						"schema:httpMethod": "PUT",
+						"schema:identifier": {
+							"@id": "_:c14n67",
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getText",
+							"schema:valueReference": { "@id": "_:tika" }
+						},
+						"schema:name": "getText",
+						"schema:urlTemplate": "/tika"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": [
+							"application/json",
+							"application/rdf+xml",
+							"text/csv",
+							"text/plain"
+						],
+						"schema:httpMethod": "PUT",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getMetadataField",
+							"schema:valueReference": { "@id": "_:metadata" }
+						},
+						"schema:name": "getMetadataField",
+						"schema:urlTemplate": "/meta/{field}"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": ["application/x-tar", "application/zip"],
+						"schema:httpMethod": "PUT",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "unpack",
+							"schema:valueReference": { "@id": "_:unpacker" }
+						},
+						"schema:name": "unpack",
+						"schema:urlTemplate": "/unpack/{id:(/.*)?}"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/plain",
+						"schema:httpMethod": "GET",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getMessage",
+							"schema:valueReference": { "@id": "_:tika" }
+						},
+						"schema:name": "getMessage",
+						"schema:urlTemplate": "/tika"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/plain",
+						"schema:httpMethod": "GET",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getParserDetailssPlain",
+							"schema:valueReference": { "@id": "_:parsers" }
+						},
+						"schema:name": "getParserDetailssPlain",
+						"schema:urlTemplate": "/parsers/details"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "application/json",
+						"schema:httpMethod": "GET",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getParserDetailsJSON",
+							"schema:valueReference": { "@id": "_:parsers" }
+						},
+						"schema:name": "getParserDetailsJSON",
+						"schema:urlTemplate": "/parsers/details"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/plain",
+						"schema:httpMethod": "GET",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getParsersPlain",
+							"schema:valueReference": { "@id": "_:parsers" }
+						},
+						"schema:name": "getParsersPlain",
+						"schema:urlTemplate": "/parsers"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/plain",
+						"schema:httpMethod": "GET",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getDetectorsPlain",
+							"schema:valueReference": { "@id": "_:detectors" }
+						},
+						"schema:name": "getDetectorsPlain",
+						"schema:urlTemplate": "/detectors"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/plain",
+						"schema:httpMethod": "POST",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "detect",
+							"schema:valueReference": { "@id": "_:language" }
+						},
+						"schema:name": "detect",
+						"schema:urlTemplate": "/language/stream"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/plain",
+						"schema:httpMethod": "GET",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getVersion",
+							"schema:valueReference": { "@id": "_:version" }
+						},
+						"schema:name": "getVersion",
+						"schema:urlTemplate": "/version"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/plain",
+						"schema:httpMethod": "POST",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "autoTranslate",
+							"schema:valueReference": { "@id": "_:translate" }
+						},
+						"schema:name": "autoTranslate",
+						"schema:urlTemplate": "/translate/all/{translator}/{dest}"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": [
+							"application/json",
+							"application/rdf+xml",
+							"text/csv"
+						],
+						"schema:httpMethod": "PUT",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getMetadata",
+							"schema:valueReference": { "@id": "_:metadata" }
+						},
+						"schema:name": "getMetadata",
+						"schema:urlTemplate": "/meta"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/html",
+						"schema:httpMethod": "GET",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getDectorsHTML",
+							"schema:valueReference": { "@id": "_:detectors" }
+						},
+
+						"schema:name": "getDectorsHTML",
+						"schema:urlTemplate": "/detectors"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "application/json",
+						"schema:httpMethod": "POST",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getMetadataFromMultipart",
+							"schema:valueReference": { "@id": "_:recursiveMetadata" }
+						},
+						"schema:name": "getMetadataFromMultipart",
+						"schema:urlTemplate": "/rmeta/form{handler : (\\\\w+)?}"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/xml",
+						"schema:httpMethod": "PUT",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getXML",
+							"schema:valueReference": { "@id": "_:tika" }
+						},
+						"schema:name": "getXML",
+						"schema:urlTemplate": "/tika"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/html",
+						"schema:httpMethod": "GET",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getMimeTypesHTML",
+							"schema:valueReference": { "@id": "_:mimeTypes" }
+						},
+						"schema:name": "getMimeTypesHTML",
+						"schema:urlTemplate": "/mime-types"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/plain",
+						"schema:httpMethod": "PUT",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getTextMain",
+							"schema:valueReference": { "@id": "_:tika" }
+						},
+						"schema:name": "getTextMain",
+						"schema:urlTemplate": "/tika/main"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "application/json",
+						"schema:httpMethod": "GET",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getMimeTypesJSON",
+							"schema:valueReference": { "@id": "_:mimeTypes" }
+						},
+						"schema:name": "getMimeTypesJSON",
+						"schema:urlTemplate": "/mime-types"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/html",
+						"schema:httpMethod": "GET",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getParsersHTML",
+							"schema:valueReference": { "@id": "_:parsers" }
+						},
+						"schema:name": "getParsersHTML",
+						"schema:urlTemplate": "/parsers"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "application/json",
+						"schema:httpMethod": "GET",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getParsersJSON",
+							"schema:valueReference": { "@id": "_:parsers" }
+						},
+						"schema:name": "getParsersJSON",
+						"schema:urlTemplate": "/parsers"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": [
+							"application/json",
+							"application/rdf+xml",
+							"text/csv"
+						],
+						"schema:httpMethod": "POST",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getMetadataFromMultipart",
+							"schema:valueReference": { "@id": "_:metadata" }
+						},
+						"schema:name": "getMetadataFromMultipart",
+						"schema:urlTemplate": "/meta/form"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/plain",
+						"schema:httpMethod": "POST",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getTextFromMultipart",
+							"schema:valueReference": { "@id": "_:tika" }
+						},
+
+						"schema:name": "getTextFromMultipart",
+						"schema:urlTemplate": "/tika/form"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/plain",
+						"schema:httpMethod": "GET",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getMimeTypesPlain",
+							"schema:valueReference": { "@id": "_:mimeTypes" }
+						},
+						"schema:name": "getMimeTypesPlain",
+						"schema:urlTemplate": "/mime-types"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": ["application/x-tar", "application/zip"],
+						"schema:httpMethod": "PUT",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "unpackAll",
+							"schema:valueReference": { "@id": "_:unpacker" }
+						},
+
+						"schema:name": "unpackAll",
+						"schema:urlTemplate": "/unpack/all{id:(/.*)?}"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/plain",
+						"schema:httpMethod": "POST",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "translate",
+							"schema:valueReference": { "@id": "_:translate" }
+						},
+
+						"schema:name": "translate",
+						"schema:urlTemplate": "/translate/all/{translator}/{src}/{dest}"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/html",
+						"schema:httpMethod": "GET",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getParserDetailsHTML",
+							"schema:valueReference": { "@id": "_:parsers" }
+						},
+						"schema:name": "getParserDetailsHTML",
+						"schema:urlTemplate": "/parsers/details"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/plain",
+						"schema:httpMethod": "POST",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "detect",
+							"schema:valueReference": { "@id": "_:language" }
+						},
+						"schema:name": "detect",
+						"schema:urlTemplate": "/language/string"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "application/json",
+						"schema:httpMethod": "GET",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getDetectorsJSON",
+							"schema:valueReference": { "@id": "_:detectors" }
+						},
+						"schema:name": "getDetectorsJSON",
+						"schema:urlTemplate": "/detectors"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/plain",
+						"schema:httpMethod": "POST",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getTextMainFromMultipart",
+							"schema:valueReference": { "@id": "_:tika" }
+						},
+						"schema:name": "getTextMainFromMultipart",
+						"schema:urlTemplate": "/tika/form/main"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "application/json",
+						"schema:httpMethod": "PUT",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getMetadata",
+							"schema:valueReference": { "@id": "_:recursiveMetadata" }
+						},
+						"schema:name": "getMetadata",
+						"schema:urlTemplate": "/rmeta/{handler : (\\\\w+)?}"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/xml",
+						"schema:httpMethod": "POST",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getXMLFromMultipart",
+							"schema:valueReference": { "@id": "_:tika" }
+						},
+						"schema:name": "getXMLFromMultipart",
+						"schema:urlTemplate": "/tika/form"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/plain",
+						"schema:httpMethod": "PUT",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "detect",
+							"schema:valueReference": { "@id": "_:detector" }
+						},
+						"schema:name": "detect",
+						"schema:urlTemplate": "/detect/stream"
+					},
+					{
+						"@type": ["schema:EntryPoint", "prov:Role"],
+						"schema:contentType": "text/html",
+						"schema:httpMethod": "POST",
+						"schema:identifier": {
+							"@type": "schema:PropertyValue",
+							"schema:propertyID": "Method",
+							"schema:value": "getHTMLFromMultipart",
+							"schema:valueReference": { "@id": "_:tika" }
+						},
+						"schema:name": "getHTMLFromMultipart",
+						"schema:urlTemplate": "/tika/form"
+					}
+				]
+			}
+		},
+		{
+			"@id": "_:detectors",
+			"@type": "schema:PropertyValue",
+			"schema:propertyID": "Class",
+			"schema:value": "org.apache.tika.server.resource.TikaDetectors"
+		},
+		{
+			"@id": "_:version",
+			"@type": "schema:PropertyValue",
+			"schema:propertyID": "Class",
+			"schema:value": "org.apache.tika.server.resource.TikaVersion"
+		},
+		{
+			"@id": "_:mimeTypes",
+			"@type": "schema:PropertyValue",
+			"schema:propertyID": "Class",
+			"schema:value": "org.apache.tika.server.resource.TikaMimeTypes"
+		},
+		{
+			"@id": "_:parsers",
+			"@type": "schema:PropertyValue",
+			"schema:propertyID": "Class",
+			"schema:value": "org.apache.tika.server.resource.TikaParsers"
+		},
+		{
+			"@id": "_:tika",
+			"@type": "schema:PropertyValue",
+			"schema:propertyID": "Class",
+			"schema:value": "org.apache.tika.server.resource.TikaResource"
+		},
+		{
+			"@id": "_:detector",
+			"@type": "schema:PropertyValue",
+			"schema:propertyID": "Class",
+			"schema:value": "org.apache.tika.server.resource.DetectorResource"
+		},
+		{
+			"@id": "_:recursiveMetadata",
+			"@type": "schema:PropertyValue",
+			"schema:propertyID": "Class",
+			"schema:value": "org.apache.tika.server.resource.RecursiveMetadataResource"
+		},
+		{
+			"@id": "_:language",
+			"@type": "schema:PropertyValue",
+			"schema:propertyID": "Class",
+			"schema:value": "org.apache.tika.server.resource.LanguageResource"
+		},
+		{
+			"@id": "_:unpacker",
+			"@type": "schema:PropertyValue",
+			"schema:propertyID": "Class",
+			"schema:value": "org.apache.tika.server.resource.UnpackerResource"
+		},
+		{
+			"@id": "_:metadata",
+			"@type": "schema:PropertyValue",
+			"schema:propertyID": "Class",
+			"schema:value": "org.apache.tika.server.resource.MetadataResource"
+		},
+		{
+			"@id": "_:translate",
+			"@type": "schema:PropertyValue",
+			"schema:propertyID": "Class",
+			"schema:value": "org.apache.tika.server.resource.TranslateResource"
+		}
+	]
+}
