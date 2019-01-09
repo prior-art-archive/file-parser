@@ -2,25 +2,34 @@ const express = require("express")
 
 const rp = require("request-promise-native")
 const IPFS = require("ipfs-http-client")
+const AWS = require("aws-sdk")
 
-const { IPFS_URL, TIKA_URL, CONFIGURATION_ID } = process.env
+AWS.config.update({ region: "us-east-1" })
+const s3 = new AWS.S3({ apiVersion: "2006-03-01" })
 
-if (!IPFS_URL || !TIKA_URL || !CONFIGURATION_ID) {
-	console.error("Not all environment variables set:", { IPFS_URL, TIKA_URL })
+const { IPFS_URL, CONFIGURATION_ID } = process.env
+
+if (!IPFS_URL || !CONFIGURATION_ID) {
+	console.error("Not all environment variables set:", {
+		IPFS_URL,
+		CONFIGURATION_ID,
+	})
 	process.exit(1)
 }
 
 const validate = require("./validate.js")
 const assembleAssertion = require("./assembleAssertion")
+const { Organization, Document, Assertion, sequelize } = require("./database")
 
 const ipfs = IPFS(IPFS_URL)
 const { Buffer } = ipfs.types
 
-const AWS_ORIGIN = "https://s3.amazonaws.com"
-const TIKA_URL = "http://tika"
+const TikaUrl = "http://tika"
+const DocumentIdKey = "x-amz-meta-document-id"
+const OriginalFilenameKey = "x-amz-meta-original-filename"
 
-const IPFS_OPTIONS = { pin: true }
-const IPLD_OPTIONS = {
+const IpfsOptions = { pin: true }
+const IpldOptions = {
 	format: "dag-cbor",
 	hashAlg: "sha2-256",
 }
@@ -35,39 +44,90 @@ app.post("/new", function(request, response) {
 		return
 	}
 
-	request.body.forEach(async ({ eventTime, s3 }) => {
-		const {
-			bucket: { name },
-			object: { key, size },
-		} = s3
+	// Rock on
+	request.body.forEach(({ eventTime, s3: { bucket, object } }) =>
+		s3.getObject(
+			{ Bucket: bucket.name, Key: object.key },
+			async (err, data) => {
+				if (err) return console.error(err)
+				const { Body, ContentLength, ContentType, Metadata } = data
+				const {
+					[DocumentIdKey]: documentId,
+					[OriginalFilenameKey]: originalFilename,
+				} = Metadata
 
-		const uri = `${AWS_ORIGIN}/${name}/${key}`
-		const headers = { fileUrl: uri }
+				const formData = { [originalFilename]: Body }
 
-		// The original file and extracted text are added to IPFS as regular files (bytes).
-		// The JSON metadata is added to *IPLD* as cbor-encoded JSON. This is a) more compact but also
-		// b) lets us address paths into the JSON object for when we want to talk about provenance.
-		// So e.g. we can say that the prov of something is `ipfs:/dweb/zkfjhashbytes.../path/through/json/metadata`
-		// and we can retrieve just that part of the metadata with ipfs.dag.get("zkfjhashbytes.../path/through/json/metadata").
+				const [organizationId, fileId] = key.split("/")
+				const fileUrl = `https://s3.amazonaws.com/${bucket.name}/${object.key}` // ???
+				// These are default properties for the Document in case we have to create one
+				const defaults = { organizationId, fileUrl }
 
-		// fileResult and textResult are {path: string, hash: string, size: number}
-		// but metaCid is a CID instance with a .toBaseEncodedString() method.
-		// The reason file & text are wrapped in an extra array is that IPFS supports
-		// adding multiple files or directories, so it always returns an array of every "file added".
-		const [[fileResult], metaCid, [textResult]] = await Promise.all([
-			rp
-				.get({ uri, resolveWithFullResponse: true })
-				.then(file => ipfs.add(Buffer.from(file.body), IPFS_OPTIONS)),
-			rp
-				.put({ url: `${TIKA_URL}/meta`, headers, json: true })
-				.then(meta => ipfs.dag.put(meta, IPLD_OPTIONS)),
-			rp
-				.put({ url: `${TIKA_URL}/text`, headers })
-				.then(text => ipfs.add(Buffer.from(text), IPFS_OPTIONS)),
-		])
+				const metaRequest = {
+					url: `${TIKA_URL}/meta/form`,
+					headers: { Accept: "application/json" },
+					formData,
+				}
 
-		// Hooray! Now we can assemble the actual assertion.
-	})
+				const textRequest = {
+					url: `${TIKA_URL}/tika/form`,
+					headers: { Accept: "text/plain" },
+					formData,
+				}
+
+				// Now we have a bunch of stuff to do all at once!
+
+				// The original file and extracted text are added to IPFS as regular files (bytes).
+				// The metadata is added to *IPLD* as cbor-encoded JSON. This is more compact but also
+				// lets us address paths into the JSON object when we talk about provenance (!!!).
+
+				// `fileResult` and `textResult` are both {path: string, hash: string, size: number},
+				// but `metaCid` is a CID instance with a .toBaseEncodedString() method.
+				// The reason file & text are wrapped in an extra array is that IPFS supports
+				// adding multiple files or directories, so it always returns an array of every "file added".
+				// `meta` is the actual JSON metadata object parsed from Tika; we return it from a second Promise.all
+				const startTime = new Date()
+				const [
+					[document, created],
+					[fileResult],
+					[meta, metaCid],
+					[textResult],
+				] = await Promise.all([
+					// we need to create a new document, or get the existing one.
+					Document.findOrCreate({ where: { id: documentId }, defaults }),
+					// we need to add the uploaded file to IPFS
+					ipfs.add(ipfs.types.Buffer.from(Body), IpfsOptions),
+					// we need to post the file to Tika's text extraction service, and add the result to IPFS
+					rp
+						.put(textRequest)
+						.then(text => ipfs.add(Buffer.from(text), IpfsOptions)),
+					// we also need to post the file to Tika's metadata service, and add the result to IPFS
+					rp
+						.put(metaRequest)
+						.then(body => JSON.parse(body))
+						.then(meta => Promise.all([meta, ipfs.dag.put(meta, IpldOptions)])),
+				])
+
+				if (meta) {
+					await document.update({ title: meta.title }, {})
+				}
+
+				const assertion = await assembleAssertion({
+					eventTime,
+					documentId,
+					fileUrl,
+					fileName,
+					fileResult,
+					metadata: meta,
+					metaCid,
+					textResult,
+					generatedAtTime: startTime.toISOString(),
+				})
+
+				const [result] = await ipfs.add(ipfs.types.Buffer.from(assertion))
+			}
+		)
+	)
 })
 
 app.listen(80)

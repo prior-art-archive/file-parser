@@ -30,8 +30,11 @@ module.exports = ajv.compile({
 						type: "object",
 						required: ["key", "size"],
 						properties: {
-							key: { type: "string" },
 							size: { type: "integer" },
+							key: {
+								type: "string",
+								pattern: "uploads/[a-z0-9-]+/[a-z0-9-]+\\.[a-zA-Z0-9]+",
+							},
 						},
 					},
 				},

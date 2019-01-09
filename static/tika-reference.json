@@ -1,0 +1,545 @@
+{
+	"@context": {
+		"prov": "http://www.w3.org/ns/prov#",
+		"@vocab": "http://schema.org/",
+		"actions": { "@reverse": "actionApplication" }
+	},
+	"@graph": [
+		{
+			"@id": "_:tika",
+			"@type": ["prov:SoftwareAgent", "SoftwareApplication"],
+			"name": "Apache Tika",
+			"softwareVersion": "1.20",
+			"subjectOf": [{ "@id": "_:wiki" }, { "@id": "_:docs" }],
+			"softwareHelp": [
+				{
+					"@id": "_:wiki",
+					"@type": "WebPage",
+					"url": "https://wiki.apache.org/tika/TikaJAXRS",
+					"about": { "@id": "_:tika" }
+				},
+				{
+					"@id": "_:docs",
+					"@type": "APIReference",
+					"url": "http://tika.apache.org/1.20/miredot/index.html",
+					"assemblyVersion": "1.20",
+					"about": { "@id": "_:tika" }
+				}
+			],
+			"actions": [
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "PUT",
+					"urlTemplate": "/detect/stream",
+					"name": "detect",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "detect",
+						"valueReference": { "@id": "_:DetectorResource" }
+					},
+					"contentType": ["text/plain"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "GET",
+					"urlTemplate": "/detectors",
+					"name": "getDectorsHTML",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getDectorsHTML",
+						"valueReference": { "@id": "_:TikaDetectors" }
+					},
+					"contentType": ["text/html"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "GET",
+					"urlTemplate": "/detectors",
+					"name": "getDetectorsJSON",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getDetectorsJSON",
+						"valueReference": { "@id": "_:TikaDetectors" }
+					},
+					"contentType": ["application/json"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "GET",
+					"urlTemplate": "/detectors",
+					"name": "getDetectorsPlain",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getDetectorsPlain",
+						"valueReference": { "@id": "_:TikaDetectors" }
+					},
+					"contentType": ["text/plain"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "POST",
+					"urlTemplate": "/language/stream",
+					"name": "detect",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "detect",
+						"valueReference": { "@id": "_:LanguageResource" }
+					},
+					"contentType": ["text/plain"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "POST",
+					"urlTemplate": "/language/string",
+					"name": "detect",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "detect",
+						"valueReference": { "@id": "_:LanguageResource" }
+					},
+					"contentType": ["text/plain"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "PUT",
+					"urlTemplate": "/meta",
+					"name": "getMetadata",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getMetadata",
+						"valueReference": { "@id": "_:MetadataResource" }
+					},
+					"contentType": ["text/csv", "application/json", "application/rdf+xml"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "POST",
+					"urlTemplate": "/meta/form",
+					"name": "getMetadataFromMultipart",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getMetadataFromMultipart",
+						"valueReference": { "@id": "_:MetadataResource" }
+					},
+					"contentType": ["text/csv", "application/json", "application/rdf+xml"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "PUT",
+					"urlTemplate": "/meta/{field}",
+					"name": "getMetadataField",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getMetadataField",
+						"valueReference": { "@id": "_:MetadataResource" }
+					},
+					"contentType": [
+						"text/csv",
+						"application/json",
+						"application/rdf+xml",
+						"text/plain"
+					]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "GET",
+					"urlTemplate": "/mime-types",
+					"name": "getMimeTypesHTML",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getMimeTypesHTML",
+						"valueReference": { "@id": "_:TikaMimeTypes" }
+					},
+					"contentType": ["text/html"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "GET",
+					"urlTemplate": "/mime-types",
+					"name": "getMimeTypesJSON",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getMimeTypesJSON",
+						"valueReference": { "@id": "_:TikaMimeTypes" }
+					},
+					"contentType": ["application/json"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "GET",
+					"urlTemplate": "/mime-types",
+					"name": "getMimeTypesPlain",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getMimeTypesPlain",
+						"valueReference": { "@id": "_:TikaMimeTypes" }
+					},
+					"contentType": ["text/plain"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "GET",
+					"urlTemplate": "/parsers",
+					"name": "getParsersHTML",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getParsersHTML",
+						"valueReference": { "@id": "_:TikaParsers" }
+					},
+					"contentType": ["text/html"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "GET",
+					"urlTemplate": "/parsers",
+					"name": "getParsersJSON",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getParsersJSON",
+						"valueReference": { "@id": "_:TikaParsers" }
+					},
+					"contentType": ["application/json"]
+				},
+				{
+					"httpMethod": "GET",
+					"urlTemplate": "/parsers",
+					"name": "getParsersPlain",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getParsersPlain",
+						"valueReference": { "@id": "_:TikaParsers" }
+					},
+					"contentType": ["text/plain"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "GET",
+					"urlTemplate": "/parsers/details",
+					"name": "getParserDetailsHTML",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getParserDetailsHTML",
+						"valueReference": { "@id": "_:TikaParsers" }
+					},
+					"contentType": ["text/html"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "GET",
+					"urlTemplate": "/parsers/details",
+					"name": "getParserDetailsJSON",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getParserDetailsJSON",
+						"valueReference": { "@id": "_:TikaParsers" }
+					},
+					"contentType": ["application/json"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "GET",
+					"urlTemplate": "/parsers/details",
+					"name": "getParserDetailssPlain",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getParserDetailssPlain",
+						"valueReference": { "@id": "_:TikaParsers" }
+					},
+					"contentType": ["text/plain"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "POST",
+					"urlTemplate": "/rmeta/form{handler : (\\w+)?}",
+					"name": "getMetadataFromMultipart",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getMetadataFromMultipart",
+						"valueReference": { "@id": "_:RecursiveMetadataResource" }
+					},
+					"contentType": ["application/json"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "PUT",
+					"urlTemplate": "/rmeta/{handler : (\\w+)?}",
+					"name": "getMetadata",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getMetadata",
+						"valueReference": { "@id": "_:RecursiveMetadataResource" }
+					},
+					"contentType": ["application/json"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "PUT",
+					"urlTemplate": "/tika",
+					"name": "getHTML",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getHTML",
+						"valueReference": { "@id": "_:TikaResource" }
+					},
+					"contentType": ["text/html"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "GET",
+					"urlTemplate": "/tika",
+					"name": "getMessage",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getMessage",
+						"valueReference": { "@id": "_:TikaResource" }
+					},
+					"contentType": ["text/plain"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "PUT",
+					"urlTemplate": "/tika",
+					"name": "getText",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getText",
+						"valueReference": { "@id": "_:TikaResource" }
+					},
+					"contentType": ["text/plain"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "PUT",
+					"urlTemplate": "/tika",
+					"name": "getXML",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getXML",
+						"valueReference": { "@id": "_:TikaResource" }
+					},
+					"contentType": ["text/xml"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "POST",
+					"urlTemplate": "/tika/form",
+					"name": "getHTMLFromMultipart",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getHTMLFromMultipart",
+						"valueReference": { "@id": "_:TikaResource" }
+					},
+					"contentType": ["text/html"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "POST",
+					"urlTemplate": "/tika/form",
+					"name": "getTextFromMultipart",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getTextFromMultipart",
+						"valueReference": { "@id": "_:TikaResource" }
+					},
+					"contentType": ["text/plain"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "POST",
+					"urlTemplate": "/tika/form",
+					"name": "getXMLFromMultipart",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getXMLFromMultipart",
+						"valueReference": { "@id": "_:TikaResource" }
+					},
+					"contentType": ["text/xml"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "POST",
+					"urlTemplate": "/tika/form/main",
+					"name": "getTextMainFromMultipart",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getTextMainFromMultipart",
+						"valueReference": { "@id": "_:TikaResource" }
+					},
+					"contentType": ["text/plain"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "PUT",
+					"urlTemplate": "/tika/main",
+					"name": "getTextMain",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getTextMain",
+						"valueReference": { "@id": "_:TikaResource" }
+					},
+					"contentType": ["text/plain"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "POST",
+					"urlTemplate": "/translate/all/{translator}/{dest}",
+					"name": "autoTranslate",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "autoTranslate",
+						"valueReference": { "@id": "_:TranslateResource" }
+					},
+					"contentType": ["text/plain"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "POST",
+					"urlTemplate": "/translate/all/{translator}/{src}/{dest}",
+					"name": "translate",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "translate",
+						"valueReference": { "@id": "_:TranslateResource" }
+					},
+					"contentType": ["text/plain"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "PUT",
+					"urlTemplate": "/unpack/all{id:(/.*)?}",
+					"name": "unpackAll",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "unpackAll",
+						"valueReference": { "@id": "_:UnpackerResource" }
+					},
+					"contentType": ["application/zip", "application/x-tar"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "PUT",
+					"urlTemplate": "/unpack/{id:(/.*)?}",
+					"name": "unpack",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "unpack",
+						"valueReference": { "@id": "_:UnpackerResource" }
+					},
+					"contentType": ["application/zip", "application/x-tar"]
+				},
+				{
+					"@type": ["prov:Role", "EntryPoint"],
+					"httpMethod": "GET",
+					"urlTemplate": "/version",
+					"name": "getVersion",
+					"identifier": {
+						"@type": "PropertyValue",
+						"propertyID": "Method",
+						"value": "getVersion",
+						"valueReference": { "@id": "_:TikaVersion" }
+					},
+					"contentType": ["text/plain"]
+				}
+			]
+		},
+		{
+			"@id": "_:DetectorResource",
+			"@type": "PropertyValue",
+			"value": "org.apache.tika.server.resource.DetectorResource",
+			"propertyID": "Class"
+		},
+		{
+			"@id": "_:TikaDetectors",
+			"@type": "PropertyValue",
+			"value": "org.apache.tika.server.resource.TikaDetectors",
+			"propertyID": "Class"
+		},
+		{
+			"@id": "_:LanguageResource",
+			"@type": "PropertyValue",
+			"value": "org.apache.tika.server.resource.LanguageResource",
+			"propertyID": "Class"
+		},
+		{
+			"@id": "_:MetadataResource",
+			"@type": "PropertyValue",
+			"value": "org.apache.tika.server.resource.MetadataResource",
+			"propertyID": "Class"
+		},
+		{
+			"@id": "_:TikaMimeTypes",
+			"@type": "PropertyValue",
+			"value": "org.apache.tika.server.resource.TikaMimeTypes",
+			"propertyID": "Class"
+		},
+		{
+			"@id": "_:TikaParsers",
+			"@type": "PropertyValue",
+			"value": "org.apache.tika.server.resource.TikaParsers",
+			"propertyID": "Class"
+		},
+		{
+			"@id": "_:RecursiveMetadataResource",
+			"@type": "PropertyValue",
+			"value": "org.apache.tika.server.resource.RecursiveMetadataResource",
+			"propertyID": "Class"
+		},
+		{
+			"@id": "_:TikaResource",
+			"@type": "PropertyValue",
+			"value": "org.apache.tika.server.resource.TikaResource",
+			"propertyID": "Class"
+		},
+		{
+			"@id": "_:TranslateResource",
+			"@type": "PropertyValue",
+			"value": "org.apache.tika.server.resource.TranslateResource",
+			"propertyID": "Class"
+		},
+		{
+			"@id": "_:UnpackerResource",
+			"@type": "PropertyValue",
+			"value": "org.apache.tika.server.resource.UnpackerResource",
+			"propertyID": "Class"
+		},
+		{
+			"@id": "_:TikaVersion",
+			"@type": "PropertyValue",
+			"value": "org.apache.tika.server.resource.TikaVersion",
+			"propertyID": "Class"
+		}
+	]
+}
