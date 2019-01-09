@@ -1,8 +1,8 @@
-FROM golang:alpine
+FROM node:8
+WORKDIR /usr/src/tika-server
+COPY package*.json ./
+RUN npm install --only=production
+COPY . .
 
-WORKDIR /go/src/github.com/underlay/tika-server
-ADD main.go .
-RUN go build main.go
-RUN mv main /go/bin/.
-
-ENTRYPOINT /go/bin/main
+EXPOSE 8080
+CMD [ "npm", "start" ]
