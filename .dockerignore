@@ -1,3 +1,4 @@
 node_modules
 npm-debug.log
 Dockerrun.aws.json
+Dockerrun.aws.sample.json
