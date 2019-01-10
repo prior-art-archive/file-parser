@@ -14,8 +14,10 @@
 			"environment": [
 				{ "name": "IPFS_URL", "value": "" },
 				{ "name": "DATABASE_URL", "value": "" },
+				{ "name": "AWS_REGION", "value": "" },
 				{ "name": "AWS_ACCESS_KEY_ID", "value": "" },
-				{ "name": "AWS_SECRET_ACCESS_KEY", "value": "" }
+				{ "name": "AWS_SECRET_ACCESS_KEY", "value": "" },
+				{ "name": "CONFIGURATION_ID", "value": "" }
 			],
 			"essential": true,
 			"memoryReservation": 512,

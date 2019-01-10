@@ -9,11 +9,6 @@ AWS.config.update({ region: "us-east-1" })
 const s3 = new AWS.S3({ apiVersion: "2006-03-01" })
 
 const { IPFS_URL } = process.env
-if (!IPFS_URL) {
-	console.error("IPFS URL not set")
-	process.exit(1)
-}
-
 const validate = require("./validate.js")
 const assembleAssertion = require("./assembleAssertion")
 const { Document, Assertion } = require("./database")

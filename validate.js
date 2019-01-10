@@ -1,6 +1,6 @@
 const AJV = require("ajv")
 
-const { awsRegion, configurationId } = require("./constants")
+const { AWS_REGION, CONFIGURATION_ID } = process.env
 
 const ajv = new AJV()
 
@@ -15,7 +15,7 @@ module.exports = ajv.compile({
 				type: "object",
 				required: ["eventName", "eventSource", "eventTime", "s3"],
 				properties: {
-					awsRegion: { const: awsRegion },
+					awsRegion: { const: AWS_REGION },
 					eventName: { pattern: "^ObjectCreated:" },
 					eventSource: { const: "aws:s3" },
 					eventTime: { type: "string" },
@@ -30,7 +30,7 @@ module.exports = ajv.compile({
 									name: { type: "string" },
 								},
 							},
-							configurationId: { const: configurationId },
+							configurationId: { const: CONFIGURATION_ID },
 							object: {
 								type: "object",
 								required: ["key", "size"],
@@ -38,7 +38,7 @@ module.exports = ajv.compile({
 									size: { type: "integer" },
 									key: {
 										type: "string",
-										pattern: "uploads/[a-z0-9-]+/[a-zA-Z0-9-]+\\.[a-zA-Z0-9]+",
+										pattern: "uploads/[a-z0-9-]+/[a-z0-9-]+\\.[a-zA-Z0-9]+",
 									},
 								},
 							},
