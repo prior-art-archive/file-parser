@@ -4,13 +4,7 @@
 		{
 			"name": "tika",
 			"image": "logicalspark/docker-tikaserver",
-			"command": [
-				"-enableUnsecureFeatures",
-				"-enableFileUrl",
-				"-spawnChild",
-				"-JXmx1g",
-				"-JXms256m"
-			],
+			"command": ["-spawnChild", "-JXmx1g", "-JXms256m"],
 			"essential": true,
 			"memoryReservation": 1280
 		},

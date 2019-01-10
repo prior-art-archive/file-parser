@@ -1,0 +1,6 @@
+{
+	"logging": false,
+	"dialectOptions": {
+		"ssl": true
+	}
+}
