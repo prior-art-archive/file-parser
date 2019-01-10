@@ -10,7 +10,7 @@
 		},
 		{
 			"name": "server",
-			"image": "joeltg/tika-server",
+			"image": "knowledgefutures/tika-server",
 			"essential": true,
 			"memoryReservation": 512,
 			"links": ["tika"],
