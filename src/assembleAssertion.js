@@ -22,7 +22,7 @@ const getDocumentUrl = id => "https://www.priorartarchive.org/doc/" + id
 const getDocumentUri = id => "http://priorartarchive.org/doc/" + id // whaaaa
 
 // see https://gist.github.com/joeltg/f066945ee780bfee769a26cea753f255 for background
-const context = JSON.parse(fs.readFileSync("./static/tika-context.json"))
+const context = JSON.parse(fs.readFileSync("./tika-context.json"))
 const contextKeys = Object.keys(context)
 
 // "rdfProperties" are whichever miscellaneous RDF values that Tika extracted
@@ -60,45 +60,33 @@ function getSchemaProperties(metadata, id) {
 async function assembleAssertion({
 	eventTime,
 	documentId,
-	contentType,
 	contentSize,
+	contentType,
+	generatedAtTime,
 	fileUrl: fileUrlS3, // we'll also have a fileUrl from the IPFS gateway
 	fileName,
-	fileResult,
+	fileHash,
+	textHash,
+	textSize,
 	metadata,
-	metadataCid,
-	textResult,
-	generatedAtTime,
+	metadataHash,
 }) {
-	console.log("holy shit", {
-		eventTime,
-		documentId,
-		contentType,
-		contentSize,
-		fileUrl: fileUrlS3,
-		fileName,
-		fileResult,
-		metadata,
-		metadataCid,
-		textResult,
-		generatedAtTime,
-	})
 	const documentUri = getDocumentUri(documentId)
 	const documentUrl = getDocumentUrl(documentId)
-	const fileUri = `dweb:/ipfs/${fileResult.hash}`
-	const fileUrlIPFS = getGatewayUrl(fileResult.hash) // See I told you
+	const fileUri = `dweb:/ipfs/${fileHash}`
+	const fileUrlIPFS = getGatewayUrl(fileHash) // See I told you
 	const fileSize = contentSize + "B"
-	const metaUri = `dweb:/ipfs/${metadataCid.toBaseEncodedString()}`
-	const textUri = `dweb:/ipfs/${textResult.hash}`
-	const textUrlIPFS = getGatewayUrl(textResult.hash)
-	const textSize = textResult.size + "B"
+	const metaUri = `dweb:/ipfs/${metadataHash}`
+	const textUri = `dweb:/ipfs/${textHash}`
+	const textUrlIPFS = getGatewayUrl(textHash)
 
 	// tikaAssertionGraph is the graph of properties that we will attribute to Tika
 	const tikaGraph = []
 
 	const rdfProperties = getRDFProperties(metadata, fileUri)
 	if (rdfProperties !== null) {
-		tikaGraph.push(await jsonld.expand(rdfProperties))
+		const rdfGraph = await jsonld.expand(rdfProperties)
+		tikaGraph.push(rdfGraph)
 	}
 
 	const schemaProperties = getSchemaProperties(metadata, documentUri)
@@ -123,7 +111,6 @@ async function assembleAssertion({
 	2. The File
 	3. The Transcript
 	4. The Metadata.
-	
 	*/
 	const assertion = {
 		"@context": {
@@ -197,6 +184,7 @@ async function assembleAssertion({
 			},
 		],
 	}
+
 	return jsonld.canonize(assertion, jsonldOptions)
 }
 
