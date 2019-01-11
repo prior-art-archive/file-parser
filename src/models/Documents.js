@@ -23,6 +23,10 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.TEXT,
 			allowNull: true
 		},
+		contentType: {
+			type: DataTypes.TEXT,
+			allowNull: true
+		},
 		organizationId: {
 			type: DataTypes.UUIDV4,
 			allowNull: false,
