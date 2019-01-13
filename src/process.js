@@ -1,31 +1,31 @@
 const uuidv4 = require("uuid/v4")
 const request = require("request-promise-native")
 const IPFS = require("ipfs-http-client")
+const Sequelize = require("sequelize")
 
 const assembleAssertion = require("./assembleAssertion")
-const { Document, Assertion } = require("./database")
 
-const { IPFS_URL } = process.env
+const {
+	DocumentIdKey,
+	OriginalFilenameKey,
+	MetaRequest,
+	TextRequest,
+	IpfsOptions,
+	IpldOptions,
+} = require("./constants")
+
+const { IPFS_URL, DATABASE_URL } = process.env
 
 const ipfs = IPFS(IPFS_URL)
 const { Buffer } = ipfs.types
 
-const DocumentIdKey = "document-id"
-const OriginalFilenameKey = "original-filename"
+const sequelize = new Sequelize(DATABASE_URL, {
+	logging: false,
+	dialectOptions: { ssl: true },
+})
 
-const TikaUrl = "http://tika:9998" // This container is "linked" to the Tika container
-const MetaRequest = {
-	url: `${TikaUrl}/meta/form`,
-	headers: { Accept: "application/json" },
-}
-
-const TextRequest = {
-	url: `${TikaUrl}/tika/form`,
-	headers: { Accept: "text/plain" },
-}
-
-const IpfsOptions = { pin: true }
-const IpldOptions = { format: "dag-cbor", hashAlg: "sha2-256" }
+const Document = sequelize.import("./models/Documents.js")
+const Assertion = sequelize.import("./models/Assertions.js")
 
 const getFileUrl = path => `https://assets.priorartarchive.org/${path}`
 
@@ -103,12 +103,7 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 
 	const [{ hash: cid }] = await ipfs.add(Buffer.from(canonized))
 
-	await Assertion.create({
-		id: uuidv4(),
-		cid,
-		documentId,
-		organizationId,
-	})
+	await Assertion.create({ id: uuidv4(), cid, documentId, organizationId })
 
 	return { key: Key, cid }
 }
