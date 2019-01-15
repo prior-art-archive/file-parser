@@ -8,7 +8,7 @@ The [Docker Hub image](https://cloud.docker.com/repository/registry-1.docker.io/
 
 Deploying to AWS is just uploading `Dockerrun.aws.json` to Elastic Beanstalk. 😎
 
-- `IPFS_HOST` is a the DNS address of an _https_ IFPS API route (e.g. if you can `curl https://your.host/api/v0/id`, then `IPFS_HOST=your.host`)
+- `IPFS_HOST` is a the DNS address of an _https_ IPFS API route (e.g. if you can `curl https://your.host/api/v0/id`, then `IPFS_HOST=your.host`)
 - `DATABASE_URL` is a fully-qualified postgres URI
 - `AWS_REGION` is e.g. `"us-east-1"`
 - `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are self-explanatory
