@@ -5,16 +5,20 @@ const jsonld = require("jsonld")
 const jsonldOptions = { algorithm: "URDNA2015", format: "application/n-quads" }
 
 const tikaReference =
-	"dweb:/ipfs/QmScWKwDmJP9nVou2jVVCtRLQQNcWBMXwoJnoa4RULL8wn"
-const tikaTextRole = tikaReference + "#_:c14n13"
-const tikaMetaRole = tikaReference + "#_:c14n45"
-const tikaSoftwareAgent = tikaReference + "#_:c14n74"
+	"dweb:/ipfs/QmYyRieED9hv4cVH3aQcxTC6xegDZ9kXK2zLxqHAjtBvc7"
+
+// tikaTextRole is {"@type": "prov:Role", "schema:urlTemplate": "/tika/form"}
+const tikaTextRole = tikaReference + "#_:c14n21"
+// tikaMetaRole is {"@type": "prov:Role", "schema:urlTemplate": "/meta/form"}
+const tikaMetaRole = tikaReference + "#_:c14n61"
+// tikaSoftwareAgent is {"@type": "prov:SoftwareAgent"}
+const tikaSoftwareAgent = tikaReference + "#_:c14n29"
 
 // You've really gotta admire the character breaks that line up here!
 const getGatewayUrl = cid => "https://gateway.underlay.store/ipfs/" + cid
 const getDocumentUrl = id => "https://www.priorartarchive.org/doc/" + id
 
-// URIs should not use www. subdomains and should not use https.
+// URIs should not use www subdomains and should not use https.
 // (https://www.w3.org/TR/cooluris/ and https://www.w3.org/DesignIssues/Security-NotTheS.html, respectively)
 // This is an identifier in a namespace, not a URL, and the actual URL
 // will be included as a property of this URI in all assertions.
@@ -57,7 +61,7 @@ function getSchemaProperties(metadata, id) {
 	}
 }
 
-async function assembleAssertion({
+module.exports = async function({
 	eventTime,
 	documentId,
 	contentSize,
@@ -74,7 +78,7 @@ async function assembleAssertion({
 	const documentUri = getDocumentUri(documentId)
 	const documentUrl = getDocumentUrl(documentId)
 	const fileUri = `dweb:/ipfs/${fileHash}`
-	const fileUrlIPFS = getGatewayUrl(fileHash) // See I told you
+	const fileUrlIPFS = getGatewayUrl(fileHash)
 	const fileSize = contentSize + "B"
 	const metaUri = `dweb:/ipfs/${metadataHash}`
 	const textUri = `dweb:/ipfs/${textHash}`
@@ -130,13 +134,16 @@ async function assembleAssertion({
 				"@type": "schema:DigitalDocument",
 				"schema:mainEntity": { "@id": fileUri },
 				"schema:transcript": { "@id": textUri },
-				"schema:url": documentUrl,
+				"schema:url": { "@type": "schema:URL", "@value": documentUrl },
 				"schema:associatedMedia": [fileUri, metaUri, textUri],
 				encodedBy: [
 					{
 						"@id": fileUri,
 						"@type": ["prov:Entity", "schema:MediaObject"],
-						"schema:contentUrl": [fileUrlIPFS, fileUrlS3],
+						"schema:contentUrl": [
+							{ "@type": "schema:URL", "@value": fileUrlIPFS },
+							{ "@type": "schema:URL", "@value": fileUrlS3 },
+						],
 						"schema:contentSize": fileSize,
 						"schema:encodingFormat": contentType,
 						"schema:name": fileName,
@@ -146,7 +153,10 @@ async function assembleAssertion({
 					{
 						"@id": textUri,
 						"@type": ["prov:Entity", "schema:MediaObject"],
-						"schema:contentUrl": textUrlIPFS,
+						"schema:contentUrl": {
+							"@type": "schema:URL",
+							"@value": textUrlIPFS,
+						},
 						"schema:contentSize": textSize,
 						"schema:encodingFormat": "text/plain",
 						"prov:wasAttributedTo": { "@id": tikaSoftwareAgent },
@@ -187,5 +197,3 @@ async function assembleAssertion({
 
 	return jsonld.canonize(assertion, jsonldOptions)
 }
-
-module.exports = assembleAssertion

@@ -3,7 +3,7 @@ const request = require("request-promise-native")
 const IPFS = require("ipfs-http-client")
 const Sequelize = require("sequelize")
 
-const assembleAssertion = require("./assembleAssertion")
+const assemble = require("./assemble")
 
 const {
 	DocumentIdKey,
@@ -40,7 +40,7 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 	const fileUrl = getFileUrl(Key)
 
 	// These are default properties for the Document in case we have to create one
-	const defaults = { id: uuidv4(), organizationId }
+	const defaults = { id: documentId, organizationId }
 
 	const formData = { [fileName]: Body }
 
@@ -86,7 +86,7 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 		contentType: ContentType,
 	})
 
-	const canonized = await assembleAssertion({
+	const canonized = await assemble({
 		eventTime,
 		documentId,
 		contentSize: ContentLength,

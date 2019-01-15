@@ -2,14 +2,21 @@
 	"@context": {
 		"prov": "http://www.w3.org/ns/prov#",
 		"@vocab": "http://schema.org/",
-		"actions": { "@reverse": "actionApplication" }
+		"actions": { "@reverse": "actionApplication" },
+		"url": { "@type": "URL" },
+		"name": { "@type": "Text" },
+		"httpMethod": { "@type": "Text" },
+		"urlTemplate": { "@type": "Text" },
+		"propertyID": { "@type": "Text" },
+		"value": { "@type": "Text" },
+		"contentType": { "@type": "Text" }
 	},
 	"@graph": [
 		{
 			"@id": "_:tika",
 			"@type": ["prov:SoftwareAgent", "SoftwareApplication"],
 			"name": "Apache Tika",
-			"softwareVersion": "1.20",
+			"softwareVersion": { "@type": "Text", "@value": "1.20" },
 			"subjectOf": [{ "@id": "_:wiki" }, { "@id": "_:docs" }],
 			"softwareHelp": [
 				{
@@ -22,7 +29,7 @@
 					"@id": "_:docs",
 					"@type": "APIReference",
 					"url": "http://tika.apache.org/1.20/miredot/index.html",
-					"assemblyVersion": "1.20",
+					"assemblyVersion": { "@type": "Text", "@value": "1.20" },
 					"about": { "@id": "_:tika" }
 				}
 			],
