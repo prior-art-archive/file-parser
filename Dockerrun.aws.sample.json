@@ -12,7 +12,7 @@
 			"name": "server",
 			"image": "knowledgefutures/tika-server",
 			"environment": [
-				{ "name": "IPFS_URL", "value": "" },
+				{ "name": "IPFS_HOST", "value": "" },
 				{ "name": "DATABASE_URL", "value": "" },
 				{ "name": "AWS_REGION", "value": "" },
 				{ "name": "AWS_ACCESS_KEY_ID", "value": "" },
