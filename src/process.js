@@ -14,9 +14,9 @@ const {
 	IpldOptions,
 } = require("./constants")
 
-const { IPFS_URL, DATABASE_URL } = process.env
+const { IPFS_HOST, DATABASE_URL } = process.env
 
-const ipfs = IPFS(IPFS_URL)
+const ipfs = IPFS({ host: IPFS_HOST, port: 443, protocol: "https" })
 const { Buffer } = ipfs.types
 
 const sequelize = new Sequelize(DATABASE_URL, {
