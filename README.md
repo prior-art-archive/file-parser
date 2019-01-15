@@ -8,6 +8,12 @@ The [Docker Hub image](https://cloud.docker.com/repository/registry-1.docker.io/
 
 Deploying to AWS is just uploading `Dockerrun.aws.json` to Elastic Beanstalk. 😎
 
+- `IPFS_URL` is a [multiaddr](https://github.com/multiformats/multiaddr) like `"/dns4/my-ipfs-node.com/tcp/5001"`
+- `DATABASE_URL` is a fully-qualified postgres URI
+- `AWS_REGION` is e.g. `"us-east-1"`
+- `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are self-explanatory
+- `CONFIGURATION_ID` is the _name of the S3 notification handler_ that is generating the events
+
 ## Configuration
 
 - `/Dockerrun.aws.json`

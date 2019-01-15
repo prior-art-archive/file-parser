@@ -29,6 +29,14 @@ const Assertion = sequelize.import("./models/Assertions.js")
 
 const getFileUrl = path => `https://assets.priorartarchive.org/${path}`
 
+ipfs
+	.id()
+	.then(id => console.log("connected to IPFS node with id", id))
+	.catch(err => {
+		console.error("Failed to connect to IPFS node", err)
+		process.exit(1)
+	})
+
 module.exports = async function(eventTime, Bucket, Key, data) {
 	const { Body, ContentLength, ContentType, Metadata } = data
 	const {
