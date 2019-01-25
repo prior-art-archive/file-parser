@@ -2,6 +2,7 @@ const uuidv4 = require("uuid/v4")
 const request = require("request-promise-native")
 const IPFS = require("ipfs-http-client")
 const Sequelize = require("sequelize")
+const elasticsearch = require("elasticsearch")
 
 const assemble = require("./assemble")
 
@@ -14,7 +15,7 @@ const {
 	IpldOptions,
 } = require("./constants")
 
-const { IPFS_HOST, DATABASE_URL } = process.env
+const { IPFS_HOST, DATABASE_URL, ELASTIC_URL } = process.env
 
 const ipfs = IPFS({ host: IPFS_HOST, port: 443, protocol: "https" })
 const { Buffer } = ipfs.types
@@ -23,6 +24,8 @@ const sequelize = new Sequelize(DATABASE_URL, {
 	logging: false,
 	dialectOptions: { ssl: true },
 })
+
+var elastic = new elasticsearch.Client({ host: ELASTIC_URL })
 
 const Document = sequelize.import("./models/Documents.js")
 const Assertion = sequelize.import("./models/Assertions.js")
@@ -68,7 +71,7 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 	const [
 		[document, created],
 		[{ hash: fileHash }],
-		[{ hash: textHash, size: textSize }],
+		[text, [{ hash: textHash, size: textSize }]],
 		[meta, [{ hash: metaHash }]],
 	] = await Promise.all([
 		// we need to create a new document, or get the existing one.
@@ -78,7 +81,9 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 		// we need to post the file to Tika's text extraction service, and add the result to IPFS
 		request
 			.post({ formData, ...TextRequest })
-			.then(text => ipfs.add(Buffer.from(text), IpfsOptions)),
+			.then(text =>
+				Promise.all([text, ipfs.add(Buffer.from(text), IpfsOptions)])
+			),
 		// we also need to post the file to Tika's metadata service, and add the result to IPFS
 		request
 			.post({ formData, ...MetaRequest })
@@ -87,31 +92,50 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 			.then(([meta, cid]) => Promise.all([meta, ipfs.pin.add(cid.toString())])),
 	])
 
-	document.update({
-		title: meta.title || document.title,
-		fileUrl,
-		fileName,
+	const title = meta.title || document.title
+	const generatedAtTime = startTime.toISOString()
+	const elasticIndex = {
+		title,
+		text,
+		organizationId,
+		uploadDate: generatedAtTime,
+		contentLength: ContentLength,
 		contentType: ContentType,
-	})
+	}
 
-	const canonized = await assemble({
-		eventTime,
-		documentId,
-		contentSize: ContentLength,
-		contentType: ContentType,
-		generatedAtTime: startTime.toISOString(),
-		fileUrl,
-		fileName,
-		fileHash,
-		textHash,
-		textSize: textSize + "B",
-		metadata: meta,
-		metadataHash: metaHash,
-	})
+	if (meta.hasOwnProperty("created")) {
+		elasticIndex.publicationDate = meta["created"]
+	}
 
-	const [{ hash: cid }] = await ipfs.add(Buffer.from(canonized))
+	if (meta.hasOwnProperty("language")) {
+		elasticIndex.language = meta["langauge"]
+	}
+
+	const [[{ hash: cid }]] = await Promise.all([
+		assemble({
+			eventTime,
+			documentId,
+			contentLength: ContentLength,
+			contentType: ContentType,
+			generatedAtTime,
+			fileUrl,
+			fileName,
+			fileHash,
+			textHash,
+			textSize: textSize + "B",
+			metadata: meta,
+			metadataHash: metaHash,
+		}).then(canonized => ipfs.add(Buffer.from(canonized))),
+		document.update({ title, fileUrl, fileName, contentType: ContentType }),
+		elastic.index({
+			index: "documents",
+			type: "doc",
+			id: documentId,
+			body: elasticIndex,
+		}),
+	])
 
 	await Assertion.create({ id: uuidv4(), cid, documentId, organizationId })
 
-	return { key: Key, cid }
+	return { documentId, cid }
 }

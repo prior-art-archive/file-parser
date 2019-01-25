@@ -64,7 +64,7 @@ function getSchemaProperties(metadata, id) {
 module.exports = async function({
 	eventTime,
 	documentId,
-	contentSize,
+	contentLength,
 	contentType,
 	generatedAtTime,
 	fileUrl: fileUrlS3, // we'll also have a fileUrl from the IPFS gateway
@@ -79,7 +79,7 @@ module.exports = async function({
 	const documentUrl = getDocumentUrl(documentId)
 	const fileUri = `dweb:/ipfs/${fileHash}`
 	const fileUrlIPFS = getGatewayUrl(fileHash)
-	const fileSize = contentSize + "B"
+	const fileSize = contentLength + "B"
 	const metaUri = `dweb:/ipfs/${metadataHash}`
 	const textUri = `dweb:/ipfs/${textHash}`
 	const textUrlIPFS = getGatewayUrl(textHash)

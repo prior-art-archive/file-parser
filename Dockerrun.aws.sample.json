@@ -17,7 +17,8 @@
 				{ "name": "AWS_REGION", "value": "" },
 				{ "name": "AWS_ACCESS_KEY_ID", "value": "" },
 				{ "name": "AWS_SECRET_ACCESS_KEY", "value": "" },
-				{ "name": "CONFIGURATION_ID", "value": "" }
+				{ "name": "CONFIGURATION_ID", "value": "" },
+				{ "name": "ELASTIC_URL", "value": "" }
 			],
 			"essential": true,
 			"memoryReservation": 512,
