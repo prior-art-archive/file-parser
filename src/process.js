@@ -55,6 +55,19 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 
 	const formData = { [fileName]: Body }
 
+	// we need to add the uploaded file to IPFS
+	const [{ hash: fileHash }] = await ipfs.add(Buffer.from(Body), IpfsOptions)
+	const previous = await Assertion.findOne({
+		where: { organizationId, fileCid: fileHash },
+	})
+
+	// If the there's already an assertion with the same file hash and organization ID,
+	// just return the documentId and cid of that assertion right away.
+	if (previous !== null) {
+		const { documentId, cid } = previous
+		return { documentId, cid }
+	}
+
 	// Now we have a bunch of stuff to do all at once!
 
 	// The original file and extracted text are added to IPFS as regular files (bytes).
@@ -63,21 +76,18 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 
 	// `meta` is the actual JSON metadata object parsed from Tika;
 	// we return it from a second Promise.all. There's a `cid` intermediate
-	// value (an instance of Cidwith a `toString()` method) that we subsequently
+	// value (an instance of Cid with a `toString()` method) that we subsequently
 	// pin to IPFS (bizarrely, dag.put() doesn't have a {pin: true} option, unlike .add()).
 	// The result we get from ipfs.pin.add is the same shape as the results we get from
 	// ipfs.add - an array of objects with a string `hash` property [{hash: string}].
 	const startTime = new Date() // prov:generatedAtTime for the metadata and transcript
 	const [
 		[document, created],
-		[{ hash: fileHash }],
 		[text, [{ hash: textHash, size: textSize }]],
 		[meta, [{ hash: metaHash }]],
 	] = await Promise.all([
 		// we need to create a new document, or get the existing one.
 		Document.findOrCreate({ where: { id: documentId }, defaults }),
-		// we need to add the uploaded file to IPFS
-		ipfs.add(Buffer.from(Body), IpfsOptions),
 		// we need to post the file to Tika's text extraction service, and add the result to IPFS
 		request
 			.post({ formData, ...TextRequest })
@@ -135,7 +145,13 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 		}),
 	])
 
-	await Assertion.create({ id: uuidv4(), cid, documentId, organizationId })
+	await Assertion.create({
+		id: uuidv4(),
+		cid,
+		fileCid: fileHash,
+		documentId,
+		organizationId,
+	})
 
 	return { documentId, cid }
 }

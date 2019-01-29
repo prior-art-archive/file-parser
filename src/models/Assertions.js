@@ -26,6 +26,10 @@ module.exports = function(sequelize, DataTypes) {
 		updatedAt: {
 			type: DataTypes.DATE,
 			allowNull: false
+		},
+		fileCid: {
+			type: DataTypes.TEXT,
+			allowNull: true
 		}
 	}, {
 		tableName: 'Assertions'
