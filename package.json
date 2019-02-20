@@ -1,5 +1,5 @@
 {
-	"name": "tika-server",
+	"name": "priorart-file-parser",
 	"version": "0.1.0",
 	"description": "Tika server for deployment on AWS Elastic Beanstalk",
 	"main": "index.js",
@@ -10,14 +10,14 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/underlay/tika-server.git"
+		"url": "git+https://github.com/knowledgefutures/priorart-file-parser.git"
 	},
 	"author": "Joel Gustafson",
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/underlay/tika-server/issues"
+		"url": "https://github.com/knowledgefutures/priorart-file-parser/issues"
 	},
-	"homepage": "https://github.com/underlay/tika-server#readme",
+	"homepage": "https://github.com/knowledgefutures/priorart-file-parser#readme",
 	"dependencies": {
 		"ajv": "^6.6.2",
 		"aws-sdk": "^2.384.0",
