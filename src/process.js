@@ -107,6 +107,7 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 	const elasticIndex = {
 		title,
 		text,
+		fileUrl,
 		organizationId,
 		uploadDate: generatedAtTime,
 		contentLength: ContentLength,
