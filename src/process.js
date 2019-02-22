@@ -123,24 +123,15 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 	})
 
 	const dateString =
-		meta.PushDate ||
-		customMetadata.PushDate ||
-		meta.Date ||
-		customMetadata.Date ||
-		meta.UploadDate ||
-		customMetadata.UploadDate ||
-		meta.created ||
-		customMetadata.Created
+		meta.PushDate || meta.Date || meta.UploadDate || meta.created
 
-	const title = meta.title || customMetadata.title || document.title
-
-	const description = customMetadata.description
+	const title = meta.title || document.title
 
 	const legacyBody = {
 		url: fileUrl,
 		fileId: md5Hash,
-		title,
-		description,
+		title: customMetadata.title || customMetadata.Title,
+		description: customMetadata.description || customMetadata.Description,
 		dateUploaded: document.createdAt,
 		datePublished: Date.parse(dateString) ? new Date(dateString) : undefined,
 		companyId: organizationId,
@@ -156,7 +147,7 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 	// 	body: legacyBody,
 	// })
 
-	console.log({ legacyBody })
+	console.log(title, { legacyBody })
 
 	const generatedAtTime = startTime.toISOString()
 	const elasticIndex = {
@@ -193,7 +184,7 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 		metadataHash: metaHash,
 	}
 
-	await Promise.all([
+	const { cid } = await Promise.all([
 		assemble(assertionPayload)
 			.then(canonized => ipfs.add(ipfs.types.Buffer.from(canonized)))
 			.then(([{ hash: cid }]) =>
