@@ -60,7 +60,7 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 		.digest("hex")
 
 	// These are default properties for the Document in case we have to create one
-	const defaults = { id: documentId, organizationId }
+	const defaults = { id: documentId, organizationId, fileUrl }
 
 	const formData = { [fileName]: Body }
 
@@ -125,6 +125,9 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 	const dateString =
 		meta.PushDate || meta.Date || meta.UploadDate || meta.created
 
+	const legacyDateString =
+		customMetadata.PushDate || customMetadata.Date || customMetadata.UploadDate
+
 	const title = meta.title || document.title
 
 	const legacyBody = {
@@ -133,21 +136,20 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 		title: customMetadata.title || customMetadata.Title,
 		description: customMetadata.description || customMetadata.Description,
 		dateUploaded: document.createdAt,
-		datePublished: Date.parse(dateString) ? new Date(dateString) : undefined,
+		datePublished: Date.parse(legacyDateString)
+			? new Date(legacyDateString)
+			: undefined,
 		companyId: organizationId,
 		companyName: organization.name,
-		// sourcePath: Key,
 	}
 
-	// const apiUrl = "https://api.priorartarchive.org"
-	// request({
-	// 	method: "POST",
-	// 	uri: `${apiUrl}/assets/kafka`,
-	// 	json: true,
-	// 	body: legacyBody,
-	// })
-
-	console.log(title, { legacyBody })
+	const apiUrl = "https://api.priorartarchive.org"
+	request({
+		method: "POST",
+		uri: `${apiUrl}/assets/kafka`,
+		json: true,
+		body: legacyBody,
+	})
 
 	const generatedAtTime = startTime.toISOString()
 	const elasticIndex = {
