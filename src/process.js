@@ -18,7 +18,8 @@ const {
 	IpldOptions,
 } = require("./constants")
 
-const { IPFS_HOST, DATABASE_URL, ELASTIC_URL } = process.env
+const { IPFS_HOST, DATABASE_URL, ELASTIC_URL, NODE_ENV } = process.env
+const PROD = NODE_ENV === "production"
 
 const ipfs = IPFS({ host: IPFS_HOST, port: 443, protocol: "https" })
 
@@ -146,6 +147,10 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 			: undefined,
 		companyId: organizationId,
 		companyName: organization.name,
+	}
+
+	if (!PROD) {
+		console.log("posting to kafka", legacyBody)
 	}
 
 	const apiUrl = "https://api.priorartarchive.org"
