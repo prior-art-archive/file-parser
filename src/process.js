@@ -149,9 +149,7 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 		companyName: organization.name,
 	}
 
-	if (!PROD) {
-		console.log("posting to kafka", legacyBody)
-	}
+	console.log("posting to kafka", legacyBody)
 
 	const apiUrl = "https://api.priorartarchive.org"
 	request({
