@@ -148,6 +148,7 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 			: undefined,
 		companyId: organizationId,
 		companyName: organization.name,
+		sourcePath: Key,
 	}
 
 	console.log("posting to kafka", legacyBody)
