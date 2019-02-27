@@ -152,12 +152,20 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 	console.log("posting to kafka", legacyBody)
 
 	const apiUrl = "https://api.priorartarchive.org"
-	request({
-		method: "POST",
-		uri: `${apiUrl}/assets/kafka`,
-		json: true,
-		body: legacyBody,
-	})
+	request(
+		{
+			method: "POST",
+			uri: `${apiUrl}/assets/kafka`,
+			json: true,
+			body: legacyBody,
+		},
+		(error, response, body) => {
+			if (error) {
+				console.error(error)
+			}
+			console.log("kafka response", body)
+		}
+	)
 
 	const generatedAtTime = startTime.toISOString()
 	const elasticIndex = {
