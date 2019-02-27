@@ -60,7 +60,12 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 		.digest("hex")
 
 	// These are default properties for the Document in case we have to create one
-	const defaults = { id: documentId, organizationId, fileUrl }
+	const defaults = {
+		id: documentId,
+		organizationId,
+		fileUrl,
+		contentType: ContentType,
+	}
 
 	const formData = { [fileName]: Body }
 
@@ -186,7 +191,7 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 		metadataHash: metaHash,
 	}
 
-	const { cid } = await Promise.all([
+	const [{ cid }] = await Promise.all([
 		assemble(assertionPayload)
 			.then(canonized => ipfs.add(ipfs.types.Buffer.from(canonized)))
 			.then(([{ hash: cid }]) =>
