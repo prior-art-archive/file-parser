@@ -124,8 +124,8 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 
 	const organization = await Organization.findByPk(organizationId)
 
-	const customMetadata = await getMetadata(Body, ContentType).catch(err => {
-		console.error(err)
+	const customMetadata = await getMetadata(Body, ContentType).catch(error => {
+		console.error("Error parsing custom metadata:", error)
 		return {}
 	})
 
@@ -152,7 +152,7 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 	}
 
 	if (!PROD) {
-		console.log("posting to kafka", legacyBody)
+		console.log("Posting to kafka:", legacyBody)
 	}
 
 	const apiUrl = "https://api.priorartarchive.org"
@@ -161,11 +161,15 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 		uri: `${apiUrl}/assets/kafka`,
 		json: true,
 		body: legacyBody,
-	}).then(response => {
-		if (!PROD) {
-			console.log("kafka response", response)
-		}
 	})
+		.then(response => {
+			if (!PROD) {
+				console.log("Kafka response:", response)
+			}
+		})
+		.catch(error => {
+			console.error("Error posting to legacy Kafka:", error)
+		})
 
 	const generatedAtTime = startTime.toISOString()
 	const elasticIndex = {
