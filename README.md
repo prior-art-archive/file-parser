@@ -1,6 +1,6 @@
-# tika-server
+# file-parser
 
-Tika server for deployment on AWS Elastic Beanstalk
+Metadata parsing and routing for the Prior Art Archive
 
 ## Overview
 
