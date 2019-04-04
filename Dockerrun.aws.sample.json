@@ -10,7 +10,7 @@
 		},
 		{
 			"name": "server",
-			"image": "knowledgefutures/priorart-file-parser",
+			"image": "priorartarchive/file-parser",
 			"environment": [
 				{ "name": "IPFS_HOST", "value": "" },
 				{ "name": "DATABASE_URL", "value": "" },

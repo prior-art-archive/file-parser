@@ -5,9 +5,9 @@ const IPFS = require("ipfs-http-client")
 const Sequelize = require("sequelize")
 const elasticsearch = require("elasticsearch")
 
-const assemble = require("./assemble")
+const { Buffer } = IPFS
 
-const getMetadata = require("./metadata")
+const assemble = require("./assemble")
 
 const {
 	DocumentIdKey,
@@ -18,9 +18,7 @@ const {
 	IpldOptions,
 } = require("./constants")
 
-const { IPFS_HOST, DATABASE_URL, ELASTIC_URL, NODE_ENV } = process.env
-const PROD = NODE_ENV === "production"
-console.log("environment:", NODE_ENV, PROD)
+const { IPFS_HOST, DATABASE_URL, ELASTIC_URL } = process.env
 
 const ipfs = IPFS({ host: IPFS_HOST, port: 443, protocol: "https" })
 
@@ -33,7 +31,6 @@ var elastic = new elasticsearch.Client({ host: ELASTIC_URL })
 
 const Document = sequelize.import("./models/Documents.js")
 const Assertion = sequelize.import("./models/Assertions.js")
-const Organization = sequelize.import("./models/Organizations.js")
 
 const getFileUrl = path => `https://assets.priorartarchive.org/${path}`
 
@@ -72,10 +69,7 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 	const formData = { [fileName]: Body }
 
 	// we need to add the uploaded file to IPFS
-	const [{ hash: fileHash }] = await ipfs.add(
-		ipfs.types.Buffer.from(Body),
-		IpfsOptions
-	)
+	const [{ hash: fileHash }] = await ipfs.add(Buffer.from(Body), IpfsOptions)
 
 	const previous = await Assertion.findOne({
 		where: { organizationId, fileCid: fileHash },
@@ -112,7 +106,7 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 		request
 			.post({ formData, ...TextRequest })
 			.then(text =>
-				Promise.all([text, ipfs.add(ipfs.types.Buffer.from(text), IpfsOptions)])
+				Promise.all([text, ipfs.add(Buffer.from(text), IpfsOptions)])
 			),
 		// we also need to post the file to Tika's metadata service, and add the result to IPFS
 		request
@@ -122,54 +116,10 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 			.then(([meta, cid]) => Promise.all([meta, ipfs.pin.add(cid.toString())])),
 	])
 
-	const organization = await Organization.findByPk(organizationId)
-
-	const customMetadata = await getMetadata(Body, ContentType).catch(error => {
-		console.error("Error parsing custom metadata:", error)
-		return {}
-	})
-
 	const dateString =
 		meta.PushDate || meta.Date || meta.UploadDate || meta.created
 
-	const legacyDateString =
-		customMetadata.PushDate || customMetadata.Date || customMetadata.UploadDate
-
 	const title = meta.title || document.title
-
-	const legacyBody = {
-		url: fileUrl,
-		fileId: md5Hash,
-		title: customMetadata.title || customMetadata.Title,
-		description: customMetadata.description || customMetadata.Description,
-		dateUploaded: document.createdAt,
-		datePublished: Date.parse(legacyDateString)
-			? new Date(legacyDateString)
-			: undefined,
-		companyId: organizationId,
-		companyName: organization.name,
-		sourcePath: Key,
-	}
-
-	if (!PROD) {
-		console.log("Posting to kafka:", legacyBody)
-	}
-
-	const apiUrl = "https://api.priorartarchive.org"
-	request({
-		method: "POST",
-		uri: `${apiUrl}/assets/kafka`,
-		json: true,
-		body: legacyBody,
-	})
-		.then(response => {
-			if (!PROD) {
-				console.log("Kafka response:", response)
-			}
-		})
-		.catch(error => {
-			console.error("Error posting to legacy Kafka:", error)
-		})
 
 	const generatedAtTime = startTime.toISOString()
 	const elasticIndex = {
@@ -208,7 +158,7 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 
 	const [{ cid }] = await Promise.all([
 		assemble(assertionPayload)
-			.then(canonized => ipfs.add(ipfs.types.Buffer.from(canonized)))
+			.then(canonized => ipfs.add(Buffer.from(canonized)))
 			.then(([{ hash: cid }]) =>
 				Assertion.create({
 					id: uuidv4(),
