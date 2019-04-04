@@ -18,7 +18,7 @@ const {
 	IpldOptions,
 } = require("./constants")
 
-const { IPFS_HOST, DATABASE_URL, ELASTIC_URL } = process.env
+const { HOSTNAME, IPFS_HOST, DATABASE_URL, ELASTIC_URL } = process.env
 
 const ipfs = IPFS({ host: IPFS_HOST, port: 443, protocol: "https" })
 
@@ -32,7 +32,7 @@ var elastic = new elasticsearch.Client({ host: ELASTIC_URL })
 const Document = sequelize.import("./models/Documents.js")
 const Assertion = sequelize.import("./models/Assertions.js")
 
-const getFileUrl = path => `https://assets.priorartarchive.org/${path}`
+const getFileUrl = path => `https://assets.${HOSTNAME}/${path}`
 
 ipfs
 	.id()
@@ -51,12 +51,6 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 
 	const [uploads, organizationId, fileId] = Key.split("/")
 	const fileUrl = getFileUrl(Key)
-
-	// compute md5 hash of the file for legacy reasons.
-	const md5Hash = crypto
-		.createHash("md5")
-		.update(Body)
-		.digest("hex")
 
 	// These are default properties for the Document in case we have to create one
 	const defaults = {

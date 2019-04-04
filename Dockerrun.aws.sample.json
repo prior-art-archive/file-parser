@@ -12,6 +12,7 @@
 			"name": "server",
 			"image": "priorartarchive/file-parser",
 			"environment": [
+				{ "name": "HOSTNAME", "value": "" },
 				{ "name": "IPFS_HOST", "value": "" },
 				{ "name": "DATABASE_URL", "value": "" },
 				{ "name": "AWS_REGION", "value": "" },

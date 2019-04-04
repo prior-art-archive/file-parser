@@ -2,6 +2,8 @@ const fs = require("fs")
 
 const jsonld = require("jsonld")
 
+const { HOSTNAME } = process.env
+
 const jsonldOptions = { algorithm: "URDNA2015", format: "application/n-quads" }
 
 const tikaReference =
@@ -14,16 +16,17 @@ const tikaMetaRole = tikaReference + "#_:c14n61"
 // tikaSoftwareAgent is {"@type": "prov:SoftwareAgent"}
 const tikaSoftwareAgent = tikaReference + "#_:c14n29"
 
-// You've really gotta admire the character breaks that line up here!
 const getGatewayUrl = cid => "https://gateway.underlay.store/ipfs/" + cid
-const getDocumentUrl = id => "https://www.priorartarchive.org/doc/" + id
+const getDocumentUrl = id => `https://www.${HOSTNAME}.org/doc/${id}`
+
+const Text = value => ({ "@value": value, "@type": "schema:Text" })
 
 // URIs should not use www subdomains and should not use https.
 // (https://www.w3.org/TR/cooluris/ and https://www.w3.org/DesignIssues/Security-NotTheS.html, respectively)
 // This is an identifier in a namespace, not a URL, and the actual URL
 // will be included as a property of this URI in all assertions.
 // If we ever get DOIs for our documents we should switch to those instead.
-const getDocumentUri = id => "http://priorartarchive.org/doc/" + id // whaaaa
+const getDocumentUri = id => `http://${HOSTNAME}/doc/${id}`
 
 // see https://gist.github.com/joeltg/f066945ee780bfee769a26cea753f255 for background
 const context = JSON.parse(fs.readFileSync("./tika-context.json"))
@@ -41,11 +44,32 @@ function getRDFProperties(metadata, id) {
 		// Need to include the context for this subgraph since
 		// we're likely using a bunch of weird foriegn namespaces
 		const rdf = { "@context": context, "@id": id }
-		rdfKeys.forEach(key => (rdf[key] = metadata[key]))
+		rdfKeys.forEach(key => (rdf[key] = coerceRDFProperty(metadata[key])))
 		return rdf
 	} else {
 		return null
 	}
+}
+
+function coerceRDFProperty(value) {
+	if (value === "true" || value === "false") {
+		return value === "true"
+	}
+
+	if (!isNaN(value)) {
+		return Number(value)
+	}
+
+	const milliseconds = Date.parse(value)
+	if (!isNaN(milliseconds)) {
+		const date = new Date(milliseconds)
+		return {
+			"@value": date.toISOString(),
+			"@type": "http://www.w3.org/2001/XMLSchema#dateTime",
+		}
+	}
+
+	return value
 }
 
 // "schemaProperties" are *known* values that correspond to columns
@@ -55,7 +79,10 @@ function getRDFProperties(metadata, id) {
 function getSchemaProperties(metadata, id) {
 	if (metadata.hasOwnProperty("title")) {
 		// No need for a context since we're only using the schema: prefix
-		return { "@id": id, "schema:name": metadata["title"] }
+		return {
+			"@id": id,
+			"schema:name": Text(metadata["title"]),
+		}
 	} else {
 		return null
 	}
@@ -80,7 +107,7 @@ module.exports = async function({
 	const fileUri = `dweb:/ipfs/${fileHash}`
 	const fileUrlIPFS = getGatewayUrl(fileHash)
 	const fileSize = contentLength + "B"
-	const metaUri = `dweb:/ipfs/${metadataHash}`
+	const metaUri = `dweb:/ipld/${metadataHash}`
 	const textUri = `dweb:/ipfs/${textHash}`
 	const textUrlIPFS = getGatewayUrl(textHash)
 
@@ -110,7 +137,7 @@ module.exports = async function({
 	/*
 	Okay so here's the real assertion. It relates four main objects:
 	1. The Document
-		This is of type schema:DigitalDocument with a URI http://priorartarchive.org/doc/<documentId>.
+		This is of type schema:DigitalDocument with a URI http://${HOSTNAME}/doc/<documentId>.
 		This is *
 	2. The File
 	3. The Transcript
@@ -120,6 +147,7 @@ module.exports = async function({
 		"@context": {
 			prov: "http://www.w3.org/ns/prov#",
 			schema: "http://schema.org/",
+			xsd: "http://www.w3.org/2001/XMLSchema#",
 			// schema:encodesCreativeWork and schema:associatedMedia are inverses of each other;
 			// we explicitly include both directions.
 			encodedBy: { "@reverse": "schema:encodesCreativeWork" },
@@ -144,11 +172,14 @@ module.exports = async function({
 							{ "@type": "schema:URL", "@value": fileUrlIPFS },
 							{ "@type": "schema:URL", "@value": fileUrlS3 },
 						],
-						"schema:contentSize": fileSize,
-						"schema:encodingFormat": contentType,
-						"schema:name": fileName,
+						"schema:contentSize": Text(fileSize),
+						"schema:encodingFormat": Text(contentType),
+						"schema:name": Text(fileName),
 						"schema:mainEntityOfPage": { "@id": documentUri },
-						"schema:uploadDate": eventTime,
+						"schema:uploadDate": {
+							"@value": eventTime,
+							"@type": "schema:Date",
+						},
 					},
 					{
 						"@id": textUri,
@@ -157,10 +188,13 @@ module.exports = async function({
 							"@type": "schema:URL",
 							"@value": textUrlIPFS,
 						},
-						"schema:contentSize": textSize,
-						"schema:encodingFormat": "text/plain",
+						"schema:contentSize": Text(textSize),
+						"schema:encodingFormat": Text("text/plain"),
 						"prov:wasAttributedTo": { "@id": tikaSoftwareAgent },
-						"prov:generatedAtTime": generatedAtTime,
+						"prov:generatedAtTime": {
+							"@value": generatedAtTime,
+							"@type": "xsd:dateTime",
+						},
 						"prov:wasGeneratedBy": {
 							"@type": "prov:Activity",
 							"prov:generated": { "@id": textUri },
