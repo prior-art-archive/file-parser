@@ -2,21 +2,50 @@
 
 Tika server for deployment on AWS Elastic Beanstalk
 
-## Usage
+## Overview
 
-The [Docker Hub image](https://cloud.docker.com/repository/registry-1.docker.io/priorartarchive/file-parser) no longer autobuilds; you must manually push with `docker push priorartarchive/file-parser`.
+The file parser is deployed as an Elastic Beanstalk application on AWS (called FileParser). This platform was chosen because it lets deploy with docker images and lets us auto-scale behind a load-balancer.
 
-Deploying to AWS is just uploading `Dockerrun.aws.json` to Elastic Beanstalk. 😎
+This means the code in this repository gets built as a docker image and pushed to Docker Hub at https://hub.docker.com/r/priorartarchive/file-parser. Deploying to AWS is just uploading a `Dockerrun.aws.json` configuration file ([documented here](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create_deploy_docker_v2config.html)) that tells Elastic Beanstalk to pull `priorartarchive/file-parser` (along with a sibling container from `logicalspark/docker-tikaserver`).
 
-- `IPFS_HOST` is a the DNS address of an _https_ IPFS API route (e.g. if you can `curl https://your.host/api/v0/id`, then `IPFS_HOST=your.host`)
-- `DATABASE_URL` is a fully-qualified postgres URI
-- `AWS_REGION` is e.g. `"us-east-1"`
-- `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` are self-explanatory
-- `CONFIGURATION_ID` is the _name of the S3 notification handler_ that is generating the events
+To get a `Dockerrun.aws.json` to upload to Elastic Beanstalk, copy & modify the `Dockerrun.aws.sample.json` to fill out the environment variables:
+
+- `HOSTNAME` is either `priorartarchive.org` or `dev.priorartarchive.org`.
+- `IPFS_HOST` is a the DNS address of an _https_ IPFS API route (e.g. if you can `curl https://your.host/api/v0/id`, then `IPFS_HOST=your.host`). For now, we use `api.underlay.store` for both dev and prod.
+- `DATABASE_URL` is the fully-qualified postgres URI (including the `username:password@` at the beginning).
+- `AWS_REGION` is `us-east-1`.
+- `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` need to have `AmazonS3FullAccess`, `AWSLambdaExecute`, and `AWSLambdaRole` permission policies.
+- `CONFIGURATION_ID` is the _name of the S3 notification handler_ that is generating the events. The name of the handlers on both the `assets.priorartarchive.org` and `assets.dev.priorartarchive.org` buckets is `NewFile`.
+
+**In addition**, edit the `"image": "priorartarchive/priorart-file-parser"` line to **include the tag** of the docker image that you want to use: for now there's only a `dev` tag but there will be a `prod` tag once v2 goes live.
+
+## Deploying procedure
+
+### Dev
+
+Local changes should be committed to the `dev` branch. When you're ready to deploy a dev version, build a local image and push to the docker hub repo:
+
+```
+docker build -t priorartarchive/file-parser:dev .
+docker push priorartarchive/file-parser:dev
+```
+
+Then head over to Elastic Beanstalk and upload a `Dockerrun.aws.json` file (containing URIs for the development database and elasticsearch, and referencing the `priorartarchive/priorart-file-parser:dev` image) to the `file-parser-dev` environment of the `FileParser` application.
+
+### Prod
+
+Changes to `master` should only come a pull requests from `dev`. When you're ready to deploy a prod version, build a local image and push to the docker hub repo:
+
+```
+docker build -t priorartarchive/file-parser:prod .
+docker push priorartarchive/file-parser:prod
+```
+
+Then head over to Elastic Beanstalk and upload a `Dockerrun.aws.json` file (containing URIs for the production database and elasticsearch, and referencing the `priorartarchive/priorart-file-parser:prod` image) to the `file-parser-prod` environment of the `FileParser` application.
 
 ## Configuration
 
-- `/Dockerrun.aws.json`
+- `/Dockerrun.aws.sample.json`
   - `-spawnChild` is documented [here](https://wiki.apache.org/tika/TikaJAXRS#Making_Tika_Server_Robust_to_OOMs.2C_Infinite_Loops_and_Memory_Leaks). "This starts tika-server in a child process, and if there's an OOM, a timeout or other catastrophic problem with the child process, the parent process will kill and/or restart the child process."
   - `-JXmx1g` sets the max heap for the spawned child process at 1GB.
   - `-JXms256m` sets the initial heap for the spawned child process at 256MB.
