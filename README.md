@@ -4,7 +4,7 @@ Tika server for deployment on AWS Elastic Beanstalk
 
 ## Usage
 
-The [Docker Hub image](https://cloud.docker.com/repository/registry-1.docker.io/joeltg/tika-server) should auto-build on every repo push.
+The [Docker Hub image](https://cloud.docker.com/repository/registry-1.docker.io/priorartarchive/file-parser) no longer autobuilds; you must manually push with `docker push priorartarchive/file-parser`.
 
 Deploying to AWS is just uploading `Dockerrun.aws.json` to Elastic Beanstalk. 😎
 
