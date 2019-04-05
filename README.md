@@ -30,7 +30,7 @@ docker build -t priorartarchive/file-parser:dev .
 docker push priorartarchive/file-parser:dev
 ```
 
-Then head over to Elastic Beanstalk and upload a `Dockerrun.aws.json` file (containing URIs for the development database and elasticsearch, and referencing the `priorartarchive/priorart-file-parser:dev` image) to the `file-parser-dev` environment of the `FileParser` application.
+Then head over to Elastic Beanstalk and upload a `Dockerrun.aws.json` file (containing URIs for the development database and elasticsearch, and referencing the `priorartarchive/priorart-file-parser:dev` image) to the `file-parser-dev` environment of the `FileParser` application. When prompted for a version label, enter the sha-1 of the current commit.
 
 ### Prod
 
