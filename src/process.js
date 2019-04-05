@@ -19,7 +19,7 @@ const {
 } = require("./constants")
 
 const { NODE_ENV, IPFS_HOST, DATABASE_URL, ELASTIC_URL } = process.env
-const s3Bucket = NODE_ENV === "development" ? "dev-assets." : "assets"
+const s3Bucket = NODE_ENV === "development" ? "dev-assets" : "assets"
 
 const ipfs = IPFS({ host: IPFS_HOST, port: 443, protocol: "https" })
 
