@@ -10,12 +10,12 @@ This means the code in this repository gets built as a docker image and pushed t
 
 To get a `Dockerrun.aws.json` to upload to Elastic Beanstalk, copy & modify the `Dockerrun.aws.sample.json` to fill out the environment variables:
 
-- `HOSTNAME` is either `priorartarchive.org` or `dev.priorartarchive.org`.
+- `NODE_ENV` is either `production` or `development`.
 - `IPFS_HOST` is a the DNS address of an _https_ IPFS API route (e.g. if you can `curl https://your.host/api/v0/id`, then `IPFS_HOST=your.host`). For now, we use `api.underlay.store` for both dev and prod.
 - `DATABASE_URL` is the fully-qualified postgres URI (including the `username:password@` at the beginning).
 - `AWS_REGION` is `us-east-1`.
 - `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` need to have `AmazonS3FullAccess`, `AWSLambdaExecute`, and `AWSLambdaRole` permission policies.
-- `CONFIGURATION_ID` is the _name of the S3 notification handler_ that is generating the events. The name of the handlers on both the `assets.priorartarchive.org` and `assets.dev.priorartarchive.org` buckets is `NewFile`.
+- `CONFIGURATION_ID` is the _name of the S3 notification handler_ that is generating the events. The name of the handlers on both the `assets.priorartarchive.org` and `dev-assets.priorartarchive.org` buckets is `NewFile`.
 
 **In addition**, edit the `"image": "priorartarchive/priorart-file-parser"` line to **include the tag** of the docker image that you want to use: for now there's only a `dev` tag but there will be a `prod` tag once v2 goes live.
 

@@ -2,7 +2,7 @@ const fs = require("fs")
 
 const jsonld = require("jsonld")
 
-const { HOSTNAME } = process.env
+const { NODE_ENV } = process.env
 
 const jsonldOptions = { algorithm: "URDNA2015", format: "application/n-quads" }
 
@@ -16,8 +16,10 @@ const tikaMetaRole = tikaReference + "#_:c14n61"
 // tikaSoftwareAgent is {"@type": "prov:SoftwareAgent"}
 const tikaSoftwareAgent = tikaReference + "#_:c14n29"
 
+const subdomain = NODE_ENV === "development" ? "dev-v2" : "v2"
 const getGatewayUrl = cid => "https://gateway.underlay.store/ipfs/" + cid
-const getDocumentUrl = id => `https://www.${HOSTNAME}.org/doc/${id}`
+const getDocumentUrl = id =>
+	`https://${subdomain}.priorartarchive.org/doc/${id}`
 
 const Text = value => ({ "@value": value, "@type": "schema:Text" })
 
@@ -26,7 +28,7 @@ const Text = value => ({ "@value": value, "@type": "schema:Text" })
 // This is an identifier in a namespace, not a URL, and the actual URL
 // will be included as a property of this URI in all assertions.
 // If we ever get DOIs for our documents we should switch to those instead.
-const getDocumentUri = id => `http://${HOSTNAME}/doc/${id}`
+const getDocumentUri = id => `http://priorartarchive.org/doc/${id}`
 
 // see https://gist.github.com/joeltg/f066945ee780bfee769a26cea753f255 for background
 const context = JSON.parse(fs.readFileSync("./tika-context.json"))
@@ -137,7 +139,7 @@ module.exports = async function({
 	/*
 	Okay so here's the real assertion. It relates four main objects:
 	1. The Document
-		This is of type schema:DigitalDocument with a URI http://${HOSTNAME}/doc/<documentId>.
+		This is of type schema:DigitalDocument with a URI http://priorartarchive.org/doc/<documentId>.
 		This is *
 	2. The File
 	3. The Transcript

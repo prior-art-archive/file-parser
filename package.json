@@ -1,11 +1,10 @@
 {
 	"name": "file-parser",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"description": "Tika server for deployment on AWS Elastic Beanstalk",
 	"main": "index.js",
 	"scripts": {
 		"start": "node index.js",
-		"models": "./models.sh",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"repository": {
@@ -20,7 +19,7 @@
 	"homepage": "https://github.com/prior-art-archive/file-parser#readme",
 	"dependencies": {
 		"ajv": "^6.10.0",
-		"aws-sdk": "^2.435.0",
+		"aws-sdk": "^2.437.0",
 		"elasticsearch": "^15.4.1",
 		"express": "^4.16.4",
 		"ipfs-http-client": "^30.1.1",
