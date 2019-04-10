@@ -157,11 +157,11 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 			.then(([{ hash: cid }]) =>
 				Assertion.create({
 					id: uuidv4(),
-					cid,
-					fileCid: fileHash,
-					transcriptCid: textHash,
 					documentId,
 					organizationId,
+					cid,
+					fileCid: fileHash,
+					textCid: textHash,
 				})
 			),
 		document.update({ title, fileUrl, fileName, contentType: ContentType }),

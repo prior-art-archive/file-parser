@@ -19,6 +19,14 @@ module.exports = function(sequelize, DataTypes) {
 			type: DataTypes.TEXT,
 			allowNull: true
 		},
+		fileCid: {
+			type: DataTypes.TEXT,
+			allowNull: true
+		},
+		textCid: {
+			type: DataTypes.TEXT,
+			allowNull: true
+		},
 		createdAt: {
 			type: DataTypes.DATE,
 			allowNull: false
@@ -26,10 +34,6 @@ module.exports = function(sequelize, DataTypes) {
 		updatedAt: {
 			type: DataTypes.DATE,
 			allowNull: false
-		},
-		fileCid: {
-			type: DataTypes.TEXT,
-			allowNull: true
 		}
 	}, {
 		tableName: 'Assertions'

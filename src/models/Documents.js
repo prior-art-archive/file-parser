@@ -35,6 +35,10 @@ module.exports = function(sequelize, DataTypes) {
 				key: 'id'
 			}
 		},
+		cpcCodes: {
+			type: "ARRAY",
+			allowNull: true
+		},
 		createdAt: {
 			type: DataTypes.DATE,
 			allowNull: false
