@@ -131,8 +131,8 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 	const {
 		assertion,
 		title: newTitle,
-		language,
-		publicationDate,
+		language: newLanguage,
+		publicationDate: newPublicationDate,
 	} = await assemble(assertionPayload)
 
 	let filePath = fileCid + (ContentTypes[ContentType] || "")
@@ -184,13 +184,13 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 	}
 
 	const title = newTitle || document.title
+	const publicationDate = newPublicationDate
+	const language = newLanguage
 
 	if (title) {
 		elasticIndex.title = title
 	}
 
-	// In the future we should add publicationDate and language
-	// to the Document table as well...
 	if (publicationDate) {
 		elasticIndex.publicationDate = publicationDate
 	}
@@ -208,7 +208,13 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 			fileCid,
 			fileName,
 		}),
-		document.update({ title, fileUrl, contentType: ContentType }),
+		document.update({
+			title,
+			fileUrl,
+			contentType: ContentType,
+			language,
+			publicationDate,
+		}),
 		elastic.index({
 			index: "documents",
 			type: "doc",
