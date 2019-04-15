@@ -1,5 +1,5 @@
 FROM node:8
-WORKDIR /usr/src/tika-server
+WORKDIR /usr/src/file-parser
 COPY package*.json ./
 RUN npm install --only=production
 COPY src/ ./
