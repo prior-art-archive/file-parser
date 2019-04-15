@@ -1,25 +1,25 @@
-const crypto = require("crypto")
 const uuidv4 = require("uuid/v4")
-const request = require("request-promise-native")
 const IPFS = require("ipfs-http-client")
 const Sequelize = require("sequelize")
 const elasticsearch = require("elasticsearch")
+const fetch = require("node-fetch")
+const FormData = require("form-data")
 
 const { Buffer } = IPFS
 
 const assemble = require("./assemble")
 
 const {
+	subdomain,
 	DocumentIdKey,
 	OriginalFilenameKey,
 	MetaRequest,
 	TextRequest,
-	IpfsOptions,
-	IpldOptions,
+	FileNames,
+	ContentTypes,
 } = require("./constants")
 
 const { NODE_ENV, IPFS_HOST, DATABASE_URL, ELASTIC_URL } = process.env
-const s3Bucket = NODE_ENV === "development" ? "dev-assets" : "assets"
 
 const ipfs = IPFS({ host: IPFS_HOST, port: 443, protocol: "https" })
 
@@ -33,7 +33,21 @@ var elastic = new elasticsearch.Client({ host: ELASTIC_URL })
 const Document = sequelize.import("./models/Documents.js")
 const Assertion = sequelize.import("./models/Assertions.js")
 
-const getFileUrl = path => `https://${s3Bucket}.priorartarchive.org/${path}`
+function pinToCluster(file, metadata, transcript, doc, org) {
+	ipfs
+		.add([
+			{
+				path: "/file.pdf",
+				content: Buffer.from(file),
+			},
+			{
+				path: "/transcript.txt",
+				content: Buffer.from(transcript),
+			},
+			{ path: "/metadata.csv", content: Buffer.from(metadata) },
+		])
+		.then(files => console.log(files))
+}
 
 ipfs
 	.id()
@@ -50,24 +64,18 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 		[OriginalFilenameKey]: fileName,
 	} = Metadata
 
+	const fileUrl = `https://${Bucket}/${Key}`
 	const [uploads, organizationId, fileId] = Key.split("/")
-	const fileUrl = getFileUrl(Key)
 
-	// These are default properties for the Document in case we have to create one
-	const defaults = {
-		id: documentId,
-		organizationId,
-		fileUrl,
-		contentType: ContentType,
-	}
+	const bytes = Buffer.from(Body)
 
-	const formData = { [fileName]: Body }
-
-	// we need to add the uploaded file to IPFS
-	const [{ hash: fileHash }] = await ipfs.add(Buffer.from(Body), IpfsOptions)
+	const [{ hash: fileCid }] = await ipfs.add(bytes, {
+		onlyHash: true,
+		"cid-version": 1,
+	})
 
 	const previous = await Assertion.findOne({
-		where: { organizationId, fileCid: fileHash },
+		where: { organizationId, fileCid },
 	})
 
 	// If the there's already an assertion with the same file hash and organization ID,
@@ -77,64 +85,46 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 		return { documentId, cid }
 	}
 
-	// Now we have a bunch of stuff to do all at once!
+	// prov:generatedAtTime for the metadata and transcript
+	const startTime = new Date()
 
-	// The original file and extracted text are added to IPFS as regular files (bytes).
-	// The metadata is added to *IPLD* as cbor-encoded JSON. This is more compact but also
-	// lets us address paths into the JSON object when we talk about provenance (!!!).
-
-	// `meta` is the actual JSON metadata object parsed from Tika;
-	// we return it from a second Promise.all. There's a `cid` intermediate
-	// value (an instance of Cid with a `toString()` method) that we subsequently
-	// pin to IPFS (bizarrely, dag.put() doesn't have a {pin: true} option, unlike .add()).
-	// The result we get from ipfs.pin.add is the same shape as the results we get from
-	// ipfs.add - an array of objects with a string `hash` property [{hash: string}].
-	const startTime = new Date() // prov:generatedAtTime for the metadata and transcript
-	const [
-		[document, created],
-		[text, [{ hash: textHash, size: textSize }]],
-		[meta, [{ hash: metaHash }]],
-	] = await Promise.all([
-		// we need to create a new document, or get the existing one.
-		Document.findOrCreate({ where: { id: documentId }, defaults }),
-		// we need to post the file to Tika's text extraction service, and add the result to IPFS
-		request
-			.post({ formData, ...TextRequest })
-			.then(text =>
-				Promise.all([text, ipfs.add(Buffer.from(text), IpfsOptions)])
-			),
-		// we also need to post the file to Tika's metadata service, and add the result to IPFS
-		request
-			.post({ formData, ...MetaRequest })
-			.then(body => JSON.parse(body))
-			.then(meta => Promise.all([meta, ipfs.dag.put(meta, IpldOptions)]))
-			.then(([meta, cid]) => Promise.all([meta, ipfs.pin.add(cid.toString())])),
-	])
-
-	const dateString =
-		meta.PushDate || meta.Date || meta.UploadDate || meta.created
-
-	const title = meta.title || document.title
-
-	const generatedAtTime = startTime.toISOString()
-	const elasticIndex = {
-		title,
-		text,
-		fileUrl,
+	// These are default properties for the Document in case we have to create one
+	const defaults = {
+		id: documentId,
 		organizationId,
-		uploadDate: generatedAtTime,
-		contentLength: ContentLength,
+		fileUrl,
 		contentType: ContentType,
 	}
 
-	if (Date.parse(dateString)) {
-		const date = new Date(dateString)
-		elasticIndex.publicationDate = date.toISOString()
-	}
+	const metaForm = new FormData()
+	const tikaForm = new FormData()
+	metaForm.append(fileName, Body)
+	tikaForm.append(fileName, Body)
 
-	if (meta.hasOwnProperty("language")) {
-		elasticIndex.language = meta["langauge"]
-	}
+	const [[document, created], transcript, metadata] = await Promise.all([
+		// create a new document, or get the existing one.
+		Document.findOrCreate({ where: { id: documentId }, defaults }),
+		// post the file to Tika's text extraction service
+		fetch(MetaRequest.url, {
+			method: "POST",
+			body: metaForm,
+			headers: MetaRequest.headers,
+		}).then(res => res.text()),
+		// post the file to Tika's metadata service
+		fetch(TextRequest.url, {
+			method: "POST",
+			body: tikaForm,
+			headers: TextRequest.headers,
+		}).then(res => res.text()),
+	])
+
+	const [
+		{ hash: transcriptCid, size: transcriptSize },
+		{ hash: metadataCid, size: metadataSize },
+	] = await ipfs.add([Buffer.from(transcript), Buffer.from(metadata)], {
+		onlyHash: true,
+		"cid-version": 1,
+	})
 
 	const assertionPayload = {
 		eventTime,
@@ -142,28 +132,90 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 		contentLength: ContentLength,
 		contentType: ContentType,
 		generatedAtTime,
-		fileUrl,
 		fileName,
-		fileHash,
-		textHash,
-		textSize: textSize + "B",
-		metadata: meta,
-		metadataHash: metaHash,
+		fileUrl,
+		fileCid,
+		transcriptCid,
+		transcriptSize: transcriptSize + "B",
+		metadata,
+		metadataCid,
+		metadataSize: metadataSize + "B",
 	}
 
-	const [{ cid }] = await Promise.all([
-		assemble(assertionPayload)
-			.then(canonized => ipfs.add(Buffer.from(canonized)))
-			.then(([{ hash: cid }]) =>
-				Assertion.create({
-					id: uuidv4(),
-					documentId,
-					organizationId,
-					cid,
-					fileCid: fileHash,
-					textCid: textHash,
-				})
-			),
+	const generatedAtTime = startTime.toISOString()
+	const {
+		assertion,
+		title: newTitle,
+		language,
+		publicationDate,
+	} = await assemble(assertionPayload)
+
+	let filePath = fileCid + (ContentTypes[ContentType] || "")
+
+	const results = await ipfs.add(
+		[
+			{ path: filePath, content: bytes },
+			{ path: FileNames.transcript, content: Buffer.from(transcript) },
+			{ path: FileNames.metadata, content: Buffer.from(metadata) },
+			{ path: FileNames.assertion, content: Buffer.from(assertion.data) },
+		],
+		{
+			pin: false,
+			"cid-version": 1,
+			wrapWithDirectory: true,
+		}
+	)
+
+	if (results.length !== 5 || results[4].path !== "") {
+		throw new Error("Unexpected result from IPFS")
+	}
+
+	const { hash: cid } = results[4]
+
+	const id = uuidv4()
+
+	const metaKeys = {
+		src: `${subdomain}.priorartarchive.org`,
+		assertion: id,
+		document: documentId,
+		organization: organizationId,
+	}
+
+	const queryString = Object.keys(metaKeys)
+		.map(key => `meta-${key}=${metaKeys[key]}`)
+		.join("&")
+
+	await fetch(`http://${IPFS_HOST}:9094/pins/${cid}?${queryString}`, {
+		method: "POST",
+	})
+
+	const elasticIndex = {
+		text: transcript,
+		fileUrl,
+		organizationId,
+		uploadDate: generatedAtTime,
+		contentLength: ContentLength,
+		contentType: ContentType,
+	}
+
+	const title = newTitle || document.title
+
+	if (title) {
+		elasticIndex.title = title
+	}
+
+	// In the future we should add publicationDate and language
+	// to the Document table as well...
+	if (publicationDate) {
+		elasticIndex.publicationDate = publicationDate
+	}
+
+	if (language) {
+		elasticIndex.language = language
+	}
+
+	await Promise.all([
+		Assertion.create({ id, documentId, organizationId, cid, fileCid }),
 		document.update({ title, fileUrl, fileName, contentType: ContentType }),
 		elastic.index({
 			index: "documents",

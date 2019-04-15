@@ -2,7 +2,9 @@ const fs = require("fs")
 
 const jsonld = require("jsonld")
 
-const { NODE_ENV } = process.env
+const Papa = require("papaparse")
+
+const { MetaRequest, TextRequest, subdomain } = require("./constants")
 
 const jsonldOptions = { algorithm: "URDNA2015", format: "application/n-quads" }
 
@@ -16,78 +18,101 @@ const tikaMetaRole = tikaReference + "#_:c14n61"
 // tikaSoftwareAgent is {"@type": "prov:SoftwareAgent"}
 const tikaSoftwareAgent = tikaReference + "#_:c14n29"
 
-const subdomain = NODE_ENV === "development" ? "dev-v2" : "v2"
 const getGatewayUrl = cid => "https://gateway.underlay.store/ipfs/" + cid
 const getDocumentUrl = id =>
 	`https://${subdomain}.priorartarchive.org/doc/${id}`
 
-const Text = value => ({ "@value": value, "@type": "schema:Text" })
-
+// ### IMPORTANT ###
 // URIs should not use www subdomains and should not use https.
-// (https://www.w3.org/TR/cooluris/ and https://www.w3.org/DesignIssues/Security-NotTheS.html, respectively)
-// This is an identifier in a namespace, not a URL, and the actual URL
-// will be included as a property of this URI in all assertions.
+// - https://www.w3.org/TR/cooluris/ (no www)
+// - https://www.w3.org/DesignIssues/Security-NotTheS.html (no https)
+// This is an *identifier in a namespace*, not a URL, and the actual URL
+// will be included as a property of this URI in every assertion.
 // If we ever get DOIs for our documents we should switch to those instead.
 const getDocumentUri = id => `http://priorartarchive.org/doc/${id}`
+
+// schema.org has its own weird primitive datatypes like schema:Text
+// and we should explicitly declare them as such.
+const makeText = value => ({ "@value": value, "@type": "schema:Text" })
+const makeUrl = value => ({ "@value": value, "@type": "schema:URL" })
+const makeDate = value => ({
+	"@value": value,
+	"@type": "http://www.w3.org/2001/XMLSchema#dateTime",
+})
 
 // see https://gist.github.com/joeltg/f066945ee780bfee769a26cea753f255 for background
 const context = JSON.parse(fs.readFileSync("./tika-context.json"))
 const contextKeys = Object.keys(context)
 
-// "rdfProperties" are whichever miscellaneous RDF values that Tika extracted
-// in the /meta service. They're usually from the Dublin Core ontology, but
-// also RDF all of Adobe's PDF properties, Word document metadata, etc...
-// If they exist, they're included as properties of the original schema:MediaObject file.
-function getRDFProperties(metadata, id) {
-	const rdfKeys = Object.keys(metadata).filter(key =>
-		contextKeys.find(prefix => key.indexOf(prefix + ":") === 0)
-	)
-	if (rdfKeys.length > 0) {
-		// Need to include the context for this subgraph since
-		// we're likely using a bunch of weird foriegn namespaces
-		const rdf = { "@context": context, "@id": id }
-		rdfKeys.forEach(key => (rdf[key] = coerceRDFProperty(metadata[key])))
-		return rdf
-	} else {
-		return null
-	}
-}
+// Tika does this infuriating thing where it outputs every metadata value
+// as a string, even "true" and "false". Papa.parse is configured to coerce
+// booleans, numbers, and dates into native JavaScript types ¯\_(ツ)_/¯
+// TODO: look closely at the specs for the Adobe PDF ontology to check if
+// this is actually what is supposed to happen (maybe the rdfs:range of their
+// boolean properties is actually an rdf:Alt of "true"^^xsd:String and "false"^^xsd:String)
 
-function coerceRDFProperty(value) {
-	if (value === "true" || value === "false") {
-		return value === "true"
+async function parseRDFProperties(metadata, documentUri, fileUri) {
+	const { data, errors, meta } = Papa.parse(metadata, {
+		delimiter: ",",
+		newline: "\n",
+		skipEmptyLines: true,
+		dynamicTyping: true,
+	})
+
+	if (errors && errors.length > 0) {
+		throw new Error(`Could not parse metadata: ${JSON.stringify(errors)}`)
 	}
 
-	if (!isNaN(value)) {
-		return Number(value)
-	}
+	// "fileProperties" are whichever miscellaneous RDF values that Tika extracted
+	// in the /meta/form service. Some are from the Dublin Core ontology, but there
+	// is also stuff from all of Adobe's PDF properties, Word document meta, etc...
+	// If they exist, they're included as properties of the original schema:MediaObject file.
+	const fileProperties = { "@id": fileUri }
 
-	const milliseconds = Date.parse(value)
-	if (!isNaN(milliseconds)) {
-		const date = new Date(milliseconds)
-		return {
-			"@value": date.toISOString(),
-			"@type": "http://www.w3.org/2001/XMLSchema#dateTime",
+	// "documentProperties" are *known* values that correspond to columns
+	// in the Postgres database (right now only "title", "langauge", and some dates)
+	// We manually translate this into a schema.org property of the
+	// containing schema:DigitalDocument.
+	const documentProperties = { "@id": documentUri }
+
+	// results is the object we eventually return to process.js.
+	// It holds the document title, language, and publication date.
+	const results = {}
+
+	data.forEach(([key, value]) => {
+		if (contextKeys.some(prefix => key.indexOf(prefix + ":") === 0)) {
+			if (value instanceof Date) {
+				fileProperties[key] = makeDate(value.toISOString())
+			} else {
+				fileProperties[key] = value
+			}
+		} else if (key === "title") {
+			results.title = value
+			documentProperties["schema:name"] = makeText(value)
+		} else if (key === "langauge") {
+			results.langauge = value
+			documentProperties["schema:inLanguage"] = makeText(value)
+		} else if (key === "date" && value instanceof Date) {
+			results.publicationDate = value.toISOString()
+			documentProperties["schema:datePublished"] = makeDate(value.toISOString())
+		} else if (key === "created" && value instanceof Date) {
+			documentProperties["schema:dateCreated"] = makeDate(value.toISOString())
+		} else if (key === "modified" && value instanceof Date) {
+			documentProperties["schema:dateModified"] = makeDate(value.toISOString())
 		}
+	})
+
+	const tikaGraph = []
+
+	if (Object.keys(fileProperties).length > 1) {
+		tikaGraph.push(fileProperties)
 	}
 
-	return value
-}
-
-// "schemaProperties" are *known* values that correspond to columns
-// in the Postgres database (right now only `title`.)
-// We manually translate this into a schema.org property of the
-// containing schema:DigitalDocument.
-function getSchemaProperties(metadata, id) {
-	if (metadata.hasOwnProperty("title")) {
-		// No need for a context since we're only using the schema: prefix
-		return {
-			"@id": id,
-			"schema:name": Text(metadata["title"]),
-		}
-	} else {
-		return null
+	if (Object.keys(documentProperties).length > 1) {
+		tikaGraph.push(documentProperties)
 	}
+
+	return [results, tikaGraph]
 }
 
 module.exports = async function({
@@ -98,52 +123,46 @@ module.exports = async function({
 	generatedAtTime,
 	fileUrl: fileUrlS3, // we'll also have a fileUrl from the IPFS gateway
 	fileName,
-	fileHash,
-	textHash,
-	textSize,
+	fileCid,
+	transcriptCid,
+	transcriptSize,
 	metadata,
-	metadataHash,
+	metadataCid,
+	metadataSize,
 }) {
 	const documentUri = getDocumentUri(documentId)
 	const documentUrl = getDocumentUrl(documentId)
-	const fileUri = `dweb:/ipfs/${fileHash}`
-	const fileUrlIPFS = getGatewayUrl(fileHash)
+	const fileUri = `dweb:/ipfs/${fileCid}`
+	const fileUrlIPFS = getGatewayUrl(fileCid)
 	const fileSize = contentLength + "B"
-	const metaUri = `dweb:/ipld/${metadataHash}`
-	const textUri = `dweb:/ipfs/${textHash}`
-	const textUrlIPFS = getGatewayUrl(textHash)
+	const metadataUri = `dweb:/ipfs/${metadataCid}`
+	const metadataUrl = getGatewayUrl(metadataCid)
+	const transcriptUri = `dweb:/ipfs/${transcriptCid}`
+	const transcriptUrl = getGatewayUrl(transcriptCid)
 
 	// tikaAssertionGraph is the graph of properties that we will attribute to Tika
-	const tikaGraph = []
-
-	const rdfProperties = getRDFProperties(metadata, fileUri)
-	if (rdfProperties !== null) {
-		const rdfGraph = await jsonld.expand(rdfProperties)
-		tikaGraph.push(rdfGraph)
-	}
-
-	const schemaProperties = getSchemaProperties(metadata, documentUri)
-	if (schemaProperties !== null) {
-		tikaGraph.push(schemaProperties)
-	}
+	const [results, tikaGraph] = parseRDFProperties(
+		metadata,
+		documentUri,
+		fileUri
+	)
 
 	const tikaGraphContainer = []
 	if (tikaGraph.length > 0) {
 		tikaGraphContainer.push({
+			"@type": "prov:Entity",
 			"prov:wasAttributedTo": { "@id": tikaSoftwareAgent },
-			"prov:wasDerivedFrom": { "@id": metaUri },
+			"prov:wasDerivedFrom": { "@id": metadataUri },
 			"@graph": tikaGraph,
 		})
 	}
 
 	/*
 	Okay so here's the real assertion. It relates four main objects:
-	1. The Document
-		This is of type schema:DigitalDocument with a URI http://priorartarchive.org/doc/<documentId>.
-		This is *
-	2. The File
-	3. The Transcript
-	4. The Metadata.
+	- The Document
+	- The File
+	- The Transcript
+	- The Metadata.
 	*/
 	const assertion = {
 		"@context": {
@@ -163,20 +182,17 @@ module.exports = async function({
 				"@id": documentUri,
 				"@type": "schema:DigitalDocument",
 				"schema:mainEntity": { "@id": fileUri },
-				"schema:transcript": { "@id": textUri },
-				"schema:url": { "@type": "schema:URL", "@value": documentUrl },
-				"schema:associatedMedia": [fileUri, metaUri, textUri],
+				"schema:transcript": { "@id": transcriptUri },
+				"schema:url": makeUrl(documentUrl),
+				"schema:associatedMedia": [fileUri, metadataUri, transcriptUri],
 				encodedBy: [
 					{
 						"@id": fileUri,
 						"@type": ["prov:Entity", "schema:MediaObject"],
-						"schema:contentUrl": [
-							{ "@type": "schema:URL", "@value": fileUrlIPFS },
-							{ "@type": "schema:URL", "@value": fileUrlS3 },
-						],
-						"schema:contentSize": Text(fileSize),
-						"schema:encodingFormat": Text(contentType),
-						"schema:name": Text(fileName),
+						"schema:contentUrl": [makeUrl(fileUrlIPFS), makeUrl(fileUrlS3)],
+						"schema:contentSize": makeText(fileSize),
+						"schema:encodingFormat": makeText(contentType),
+						"schema:name": makeText(fileName),
 						"schema:mainEntityOfPage": { "@id": documentUri },
 						"schema:uploadDate": {
 							"@value": eventTime,
@@ -184,14 +200,11 @@ module.exports = async function({
 						},
 					},
 					{
-						"@id": textUri,
+						"@id": transcriptUri,
 						"@type": ["prov:Entity", "schema:MediaObject"],
-						"schema:contentUrl": {
-							"@type": "schema:URL",
-							"@value": textUrlIPFS,
-						},
-						"schema:contentSize": Text(textSize),
-						"schema:encodingFormat": Text("text/plain"),
+						"schema:contentUrl": makeUrl(transcriptUrl),
+						"schema:contentSize": makeText(transcriptSize),
+						"schema:encodingFormat": makeText(TextRequest.headers.Accept),
 						"prov:wasAttributedTo": { "@id": tikaSoftwareAgent },
 						"prov:generatedAtTime": {
 							"@value": generatedAtTime,
@@ -199,7 +212,7 @@ module.exports = async function({
 						},
 						"prov:wasGeneratedBy": {
 							"@type": "prov:Activity",
-							"prov:generated": { "@id": textUri },
+							"prov:generated": { "@id": transcriptUri },
 							"prov:used": { "@id": fileUri },
 							"prov:wasAssociatedWith": { "@id": tikaSoftwareAgent },
 							"prov:qualifiedAssociation": {
@@ -210,13 +223,16 @@ module.exports = async function({
 						},
 					},
 					{
-						"@id": metaUri,
-						"@type": ["prov:Entity"],
+						"@id": metadataUri,
+						"@type": ["prov:Entity", "schema:MediaObject"],
+						"schema:contentUrl": makeUrl(metadataUrl),
+						"schema:contentSize": makeText(metadataSize),
+						"schema:encodingFormat": makeText(MetaRequest.headers.Accept),
 						"prov:wasAttributedTo": { "@id": tikaSoftwareAgent },
 						"prov:generatedAtTime": generatedAtTime,
 						"prov:wasGeneratedBy": {
 							"@type": "prov:Activity",
-							"prov:generated": { "@id": metaUri },
+							"prov:generated": { "@id": metadataUri },
 							"prov:used": { "@id": fileUri },
 							"prov:wasAssociatedWith": { "@id": tikaSoftwareAgent },
 							"prov:qualifiedAssociation": {
@@ -231,5 +247,6 @@ module.exports = async function({
 		],
 	}
 
-	return jsonld.canonize(assertion, jsonldOptions)
+	const assertion = await jsonld.canonize(assertion, jsonldOptions)
+	return { assertion, ...results }
 }

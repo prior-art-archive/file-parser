@@ -1,11 +1,15 @@
+const { NODE_ENV } = process.env
+const subdomain = NODE_ENV === "development" ? "dev" : "www"
+
 const DocumentIdKey = "document-id"
 const OriginalFilenameKey = "original-filename"
 
-const TikaUrl = "http://tika:9998" // This container is "linked" to the Tika container
+// This container is "linked" to the Tika container
+const TikaUrl = "http://tika:9998"
 
 const MetaRequest = {
 	url: `${TikaUrl}/meta/form`,
-	headers: { Accept: "application/json" },
+	headers: { Accept: "text/csv" },
 }
 
 const TextRequest = {
@@ -13,14 +17,24 @@ const TextRequest = {
 	headers: { Accept: "text/plain" },
 }
 
-const IpfsOptions = { pin: true }
-const IpldOptions = { format: "dag-cbor", hashAlg: "sha2-256" }
+const FileNames = {
+	transcript: "transcript.txt",
+	metadata: "metadata.csv",
+	assertion: "assertion.nt",
+}
+
+const ContentTypes = {
+	"text/plain": ".txt",
+	"text/html": ".html",
+	"application/pdf": ".pdf",
+}
 
 module.exports = {
+	subdomain,
 	DocumentIdKey,
 	OriginalFilenameKey,
 	MetaRequest,
 	TextRequest,
-	IpfsOptions,
-	IpldOptions,
+	FileNames,
+	ContentTypes,
 }
