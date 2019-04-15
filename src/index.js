@@ -51,6 +51,7 @@ app.listen(8088, err => {
 	if (err) {
 		console.error(err)
 	} else {
+		console.log(new Date().toISOString())
 		console.log("Listening on port 8088")
 	}
 })

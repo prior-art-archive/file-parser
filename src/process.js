@@ -200,8 +200,15 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 	}
 
 	await Promise.all([
-		Assertion.create({ id, documentId, organizationId, cid, fileCid }),
-		document.update({ title, fileUrl, fileName, contentType: ContentType }),
+		Assertion.create({
+			id,
+			documentId,
+			organizationId,
+			cid,
+			fileCid,
+			fileName,
+		}),
+		document.update({ title, fileUrl, contentType: ContentType }),
 		elastic.index({
 			index: "documents",
 			type: "doc",

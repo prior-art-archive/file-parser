@@ -89,8 +89,8 @@ async function parseRDFProperties(metadata, documentUri, fileUri) {
 		} else if (key === "title") {
 			results.title = value
 			documentProperties["schema:name"] = makeText(value)
-		} else if (key === "langauge") {
-			results.langauge = value
+		} else if (key === "language") {
+			results.language = value
 			documentProperties["schema:inLanguage"] = makeText(value)
 		} else if (key === "date" && value instanceof Date) {
 			results.publicationDate = value.toISOString()
