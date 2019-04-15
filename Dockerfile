@@ -5,6 +5,6 @@ RUN npm install --only=production
 COPY src/ ./
 
 ENV NODE_ENV production
-EXPOSE 8080
+EXPOSE 8088
 
-CMD [ "npm", "start" ]
+CMD [ "node", "index.js" ]

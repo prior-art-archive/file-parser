@@ -14,11 +14,13 @@ function processRecord({ eventTime, s3: { bucket, object } }) {
 	const { key: Key } = object
 	return new Promise((resolve, reject) =>
 		s3.getObject({ Bucket, Key }, (err, data) => {
-			if (err !== null) reject(err)
-			else
+			if (err !== null) {
+				reject(err)
+			} else {
 				processFile(eventTime, Bucket, Key, data)
 					.catch(reject)
 					.then(resolve)
+			}
 		})
 	)
 }
@@ -35,7 +37,7 @@ app.post("/new", (req, res) => {
 	Promise.all(req.body.Records.map(processRecord))
 		.catch(error => {
 			console.error("encountered an error:", error)
-			res.status(500).json({ error })
+			res.status(500).json({ error: error.toString() })
 		})
 		.then(assertions => {
 			if (assertions !== undefined) {
@@ -45,10 +47,10 @@ app.post("/new", (req, res) => {
 		})
 })
 
-app.listen(8080, err => {
+app.listen(8088, err => {
 	if (err) {
 		console.error(err)
 	} else {
-		console.log("Listening on port 8080")
+		console.log("Listening on port 8088")
 	}
 })
