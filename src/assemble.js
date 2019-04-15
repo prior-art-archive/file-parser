@@ -141,7 +141,7 @@ module.exports = async function({
 	const transcriptUrl = getGatewayUrl(transcriptCid)
 
 	// tikaAssertionGraph is the graph of properties that we will attribute to Tika
-	const [results, tikaGraph] = parseRDFProperties(
+	const [results, tikaGraph] = await parseRDFProperties(
 		metadata,
 		documentUri,
 		fileUri
@@ -247,6 +247,8 @@ module.exports = async function({
 		],
 	}
 
-	const assertion = await jsonld.canonize(assertion, jsonldOptions)
-	return { assertion, ...results }
+	return {
+		assertion: await jsonld.canonize(assertion, jsonldOptions),
+		...results,
+	}
 }

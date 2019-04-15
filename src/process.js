@@ -19,7 +19,7 @@ const {
 	ContentTypes,
 } = require("./constants")
 
-const { NODE_ENV, IPFS_HOST, DATABASE_URL, ELASTIC_URL } = process.env
+const { IPFS_HOST, DATABASE_URL, ELASTIC_URL } = process.env
 
 const ipfs = IPFS({ host: IPFS_HOST, port: 443, protocol: "https" })
 
@@ -32,22 +32,6 @@ var elastic = new elasticsearch.Client({ host: ELASTIC_URL })
 
 const Document = sequelize.import("./models/Documents.js")
 const Assertion = sequelize.import("./models/Assertions.js")
-
-function pinToCluster(file, metadata, transcript, doc, org) {
-	ipfs
-		.add([
-			{
-				path: "/file.pdf",
-				content: Buffer.from(file),
-			},
-			{
-				path: "/transcript.txt",
-				content: Buffer.from(transcript),
-			},
-			{ path: "/metadata.csv", content: Buffer.from(metadata) },
-		])
-		.then(files => console.log(files))
-}
 
 ipfs
 	.id()
@@ -81,12 +65,9 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 	// If the there's already an assertion with the same file hash and organization ID,
 	// just return the documentId and cid of that assertion right away.
 	if (previous !== null) {
-		const { documentId, cid } = previous
-		return { documentId, cid }
+		const { id, documentId, organizationId, cid, fileCid } = previous
+		return { id, documentId, organizationId, cid, fileCid }
 	}
-
-	// prov:generatedAtTime for the metadata and transcript
-	const startTime = new Date()
 
 	// These are default properties for the Document in case we have to create one
 	const defaults = {
@@ -101,7 +82,10 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 	metaForm.append(fileName, Body)
 	tikaForm.append(fileName, Body)
 
-	const [[document, created], transcript, metadata] = await Promise.all([
+	// prov:generatedAtTime for the metadata and transcript
+	const startTime = new Date()
+
+	const [[document, created], metadata, transcript] = await Promise.all([
 		// create a new document, or get the existing one.
 		Document.findOrCreate({ where: { id: documentId }, defaults }),
 		// post the file to Tika's text extraction service
@@ -126,6 +110,8 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 		"cid-version": 1,
 	})
 
+	const generatedAtTime = startTime.toISOString()
+
 	const assertionPayload = {
 		eventTime,
 		documentId,
@@ -142,7 +128,6 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 		metadataSize: metadataSize + "B",
 	}
 
-	const generatedAtTime = startTime.toISOString()
 	const {
 		assertion,
 		title: newTitle,
@@ -157,7 +142,7 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 			{ path: filePath, content: bytes },
 			{ path: FileNames.transcript, content: Buffer.from(transcript) },
 			{ path: FileNames.metadata, content: Buffer.from(metadata) },
-			{ path: FileNames.assertion, content: Buffer.from(assertion.data) },
+			{ path: FileNames.assertion, content: Buffer.from(assertion) },
 		],
 		{
 			pin: false,
@@ -193,7 +178,7 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 		text: transcript,
 		fileUrl,
 		organizationId,
-		uploadDate: generatedAtTime,
+		uploadDate: eventTime,
 		contentLength: ContentLength,
 		contentType: ContentType,
 	}
@@ -225,5 +210,5 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 		}),
 	])
 
-	return { documentId, cid }
+	return { id, documentId, organizationId, cid, fileCid }
 }
