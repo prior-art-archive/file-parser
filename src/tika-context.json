@@ -25,5 +25,7 @@
 	"crs": "http://ns.adobe.com/camera-raw-settings/1.0/",
 	"exifEX": "http://cipa.jp/exif/1.0/",
 	"exif": "http://ns.adobe.com/exif/1.0/",
-	"tiff": "http://ns.adobe.com/tiff/1.0/"
+	"tiff": "http://ns.adobe.com/tiff/1.0/",
+	"odf": "http://docs.oasis-open.org/ns/office/1.2/meta/odf#",
+	"meta": "urn:oasis:names:tc:opendocument:xmlns:meta:1.0#"
 }
