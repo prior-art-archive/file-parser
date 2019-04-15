@@ -11,6 +11,7 @@ This means the code in this repository gets built as a docker image and pushed t
 To get a `Dockerrun.aws.json` to upload to Elastic Beanstalk, copy & modify the `Dockerrun.aws.sample.json` to fill out the environment variables:
 
 - `NODE_ENV` is either `production` or `development`.
+- `TIKA_URL` is the URL for the Apache Tika server. When using Docker on AWS it should be linked with `http://tika:9998`, and when running locally it defaults to `http://localhost:9998`.
 - `IPFS_HOST` is a the DNS address of an _https_ IPFS API route (e.g. if you can `curl https://your.host/api/v0/id`, then `IPFS_HOST=your.host`). For now, we use `api.underlay.store` for both dev and prod.
 - `DATABASE_URL` is the fully-qualified postgres URI (including the `username:password@` at the beginning).
 - `AWS_REGION` is `us-east-1`.
