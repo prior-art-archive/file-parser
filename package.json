@@ -1,6 +1,6 @@
 {
 	"name": "file-parser",
-	"version": "0.3.1",
+	"version": "0.3.2",
 	"description": "Tika server for deployment on AWS Elastic Beanstalk",
 	"main": "index.js",
 	"scripts": {
