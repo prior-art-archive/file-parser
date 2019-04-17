@@ -32,9 +32,11 @@ const getDocumentUrl = id =>
 const getDocumentUri = id => `http://priorartarchive.org/doc/${id}`
 
 // schema.org has its own weird primitive datatypes like schema:Text
-// and we should explicitly declare them as such.
-const makeText = value => ({ "@value": value, "@type": "schema:Text" })
-const makeUrl = value => ({ "@value": value, "@type": "schema:URL" })
+// but we don't actually use them.
+// const makeText = value => ({ "@value": value, "@type": "schema:Text" })
+const makeText = value => ({ "@value": value })
+// const makeUrl = value => ({ "@value": value, "@type": "schema:URL" })
+const makeUrl = value => ({ "@value": value })
 const makeDate = value => ({
 	"@value": value,
 	"@type": "http://www.w3.org/2001/XMLSchema#dateTime",
@@ -194,10 +196,7 @@ module.exports = async function({
 						"schema:encodingFormat": makeText(contentType),
 						"schema:name": makeText(fileName),
 						"schema:mainEntityOfPage": { "@id": documentUri },
-						"schema:uploadDate": {
-							"@value": eventTime,
-							"@type": "schema:Date",
-						},
+						"schema:uploadDate": makeDate(eventTime),
 					},
 					{
 						"@id": transcriptUri,
