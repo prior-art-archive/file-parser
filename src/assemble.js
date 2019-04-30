@@ -5,14 +5,14 @@ const jsonld = require("jsonld")
 const jsonldOptions = { algorithm: "URDNA2015", format: "application/n-quads" }
 
 const tikaReference =
-	"dweb:/ipfs/QmYyRieED9hv4cVH3aQcxTC6xegDZ9kXK2zLxqHAjtBvc7"
+	"dweb:/ipfs/bafybeib7p2ibhncu736bewg4jw7o2j4msl72xgrd2ducrqwg5leugasx5u"
 
 // tikaTextRole is {"@type": "prov:Role", "schema:urlTemplate": "/tika/form"}
-const tikaTextRole = tikaReference + "#_:c14n21"
+const tikaTextRole = tikaReference + "#_:c14n54"
 // tikaMetaRole is {"@type": "prov:Role", "schema:urlTemplate": "/meta/form"}
-const tikaMetaRole = tikaReference + "#_:c14n61"
+const tikaMetaRole = tikaReference + "#_:c14n5"
 // tikaSoftwareAgent is {"@type": "prov:SoftwareAgent"}
-const tikaSoftwareAgent = tikaReference + "#_:c14n29"
+const tikaSoftwareAgent = tikaReference + "#_:c14n74"
 
 // You've really gotta admire the character breaks that line up here!
 const getGatewayUrl = cid => "https://gateway.underlay.store/ipfs/" + cid

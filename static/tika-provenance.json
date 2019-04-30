@@ -1,12 +1,11 @@
 {
 	"@context": {
 		"prov": "http://www.w3.org/ns/prov#",
-		"format": "http://www.w3.org/ns/formats/",
 		"@vocab": "http://schema.org/"
 	},
 	"@graph": [
 		{
-			"@id": "dweb:/ipfs/QmScWKwDmJP9nVou2jVVCtRLQQNcWBMXwoJnoa4RULL8wn#_:c14n74",
+			"@id": "dweb:/ipfs/bafybeib7p2ibhncu736bewg4jw7o2j4msl72xgrd2ducrqwg5leugasx5u#_:c14n74",
 			"url": "https://tika.apache.org",
 			"author": {
 				"@type": "Organization",
@@ -16,51 +15,51 @@
 			"releaseNotes": "https://dist.apache.org/repos/dist/release/tika/CHANGES-1.20.txt",
 			"license": "https://www.apache.org/licenses/LICENSE-2.0",
 			"associatedMedia": {
-				"@id": "dweb:/ipfs/QmQw5CKfHYyyDa8u8LQGJqHthGDLezmwnMsBhGLjAo9zFi",
+				"@id": "dweb:/ipfs/bafybeibgrdho3jht7ubvgy3ja4m57l5cpt2wgpwavjad5vu3zk34kg2cde",
 				"@type": "MediaObject",
 				"encodingFormat": "application/java-archive",
 				"encodesCreativeWork": {
-					"@id": "dweb:/ipfs/QmScWKwDmJP9nVou2jVVCtRLQQNcWBMXwoJnoa4RULL8wn#_:c14n74"
+					"@id": "dweb:/ipfs/bafybeib7p2ibhncu736bewg4jw7o2j4msl72xgrd2ducrqwg5leugasx5u#_:c14n74"
 				},
 				"contentSize": "73315491B",
-				"contentUrl": "https://gateway.underlay.store/ipfs/QmdX2PLW4m8PHGDpB37gUjw1UwEvdxFK2ixfb43NNFTZPt/tika-server-1.20.jar",
+				"contentUrl": "https://gateway.underlay.store/ipfs/bafybeihbq6pr4k3nt62cksd2nkhenb5tswjp6od7oi3cli46d3hszva574/tika-server-1.20.jar",
 				"name": "tika-server-1.20.jar",
 				"version": "1.20"
 			}
 		},
 		{
-			"@id": "dweb:/ipfs/QmScWKwDmJP9nVou2jVVCtRLQQNcWBMXwoJnoa4RULL8wn",
-			"@type": ["prov:Entity", "format:N-Quads", "DigitalDocument"],
+			"@id": "dweb:/ipfs/bafybeib7p2ibhncu736bewg4jw7o2j4msl72xgrd2ducrqwg5leugasx5u",
+			"@type": ["prov:Entity", "DigitalDocument"],
 			"encodingFormat": "application/n-quads",
 			"prov:wasDerivedFrom": {
-				"@id": "dweb:/ipfs/QmQofqmV8FHDpaEVVEwtnBv78pVirdswmcSD2oVZzeSokL",
+				"@id": "dweb:/ipfs/bafybeibeunk7ibqfjjq7y5pecrgajocn2fd6v27ahnaqhlarbmptnn3gee",
 				"@type": ["prov:Entity", "APIReference"],
 				"url": "https://gateway.underlay.store/ipfs/QmQofqmV8FHDpaEVVEwtnBv78pVirdswmcSD2oVZzeSokL",
 				"encodingFormat": "text/html",
 				"about": {
-					"@id": "dweb:/ipfs/QmScWKwDmJP9nVou2jVVCtRLQQNcWBMXwoJnoa4RULL8wn#_:c14n74"
+					"@id": "dweb:/ipfs/bafybeib7p2ibhncu736bewg4jw7o2j4msl72xgrd2ducrqwg5leugasx5u#_:c14n74"
 				},
 				"assemblyVersion": "1.20",
 				"prov:wasGeneratedBy": {
 					"@type": "prov:Activity",
 					"prov:wasAssociatedWith": {
-						"@id": "dweb:/ipfs/QmScWKwDmJP9nVou2jVVCtRLQQNcWBMXwoJnoa4RULL8wn#_:c14n74"
+						"@id": "dweb:/ipfs/bafybeib7p2ibhncu736bewg4jw7o2j4msl72xgrd2ducrqwg5leugasx5u#_:c14n74"
 					},
 					"prov:used": {
-						"@id": "dweb:/ipfs/QmQw5CKfHYyyDa8u8LQGJqHthGDLezmwnMsBhGLjAo9zFi"
+						"@id": "dweb:/ipfs/bafybeibgrdho3jht7ubvgy3ja4m57l5cpt2wgpwavjad5vu3zk34kg2cde"
 					},
 					"prov:generated": {
-						"@id": "dweb:/ipfs/QmQofqmV8FHDpaEVVEwtnBv78pVirdswmcSD2oVZzeSokL"
+						"@id": "dweb:/ipfs/bafybeibeunk7ibqfjjq7y5pecrgajocn2fd6v27ahnaqhlarbmptnn3gee"
 					},
 					"prov:qualifiedAssociation": {
 						"@type": "prov:Association",
 						"prov:agent": {
-							"@id": "dweb:/ipfs/QmScWKwDmJP9nVou2jVVCtRLQQNcWBMXwoJnoa4RULL8wn#_:c14n74"
+							"@id": "dweb:/ipfs/bafybeib7p2ibhncu736bewg4jw7o2j4msl72xgrd2ducrqwg5leugasx5u#_:c14n74"
 						},
 						"prov:hadRole": {
 							"@type": ["prov:Role", "EntryPoint"],
 							"actionApplication": {
-								"@id": "dweb:/ipfs/QmScWKwDmJP9nVou2jVVCtRLQQNcWBMXwoJnoa4RULL8wn#_:c14n74"
+								"@id": "dweb:/ipfs/bafybeib7p2ibhncu736bewg4jw7o2j4msl72xgrd2ducrqwg5leugasx5u#_:c14n74"
 							},
 							"httpMethod": "GET",
 							"urlTemplate": "/",
