@@ -19,6 +19,10 @@ To get a `Dockerrun.aws.json` to upload to Elastic Beanstalk, copy & modify the 
 
 **In addition**, edit the `"image": "priorartarchive/priorart-file-parser"` line to **include the tag** of the docker image that you want to use: for now there's only a `dev` tag but there will be a `prod` tag once v2 goes live.
 
+## Dependencies
+
+The file parser requires access to a remote IPFS node via HTTP API. This is `dev-api.underlay.store` and `api.underlay.store` for the dev and prod deployments, respectively.
+
 ## Deploying procedure
 
 ### Dev
