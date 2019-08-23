@@ -221,6 +221,12 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 			id: documentId,
 			body: elasticIndex,
 		}),
+		elastic.index({
+			index: "idx-ffca7fb0-e96c-4336-9687-303e1115abff",
+			type: "doc",
+			id: documentId,
+			body: elasticIndex,
+		}),
 	])
 
 	return { id, documentId, organizationId, cid, fileCid }
