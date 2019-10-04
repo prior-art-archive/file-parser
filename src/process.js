@@ -19,6 +19,10 @@ const {
 	ContentTypes,
 } = require("./constants")
 
+const {
+	decorateIndexWithLegacyProperties,
+} = require("./utils")
+
 const { IPFS_HOST, DATABASE_URL, ELASTIC_URL } = process.env
 
 const ipfs = IPFS({ host: IPFS_HOST, port: 443, protocol: "https" })
@@ -199,6 +203,8 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 		elasticIndex.language = language
 	}
 
+	const decoratedElasticIndex = decorateIndexWithLegacyProperties(elasticIndex)
+
 	await Promise.all([
 		Assertion.create({
 			id,
@@ -219,7 +225,7 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 			index: "documents",
 			type: "doc",
 			id: documentId,
-			body: elasticIndex,
+			body: decoratedElasticIndex,
 		}),
 	])
 
