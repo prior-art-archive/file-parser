@@ -19,9 +19,7 @@ const {
 	ContentTypes,
 } = require("./constants")
 
-const {
-	decorateIndexWithLegacyProperties,
-} = require("./utils")
+const { decorateIndexWithLegacyProperties } = require("./utils")
 
 const { IPFS_HOST, DATABASE_URL, ELASTIC_URL } = process.env
 
