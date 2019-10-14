@@ -24,7 +24,7 @@ const decorateIndexWithLegacyProperties = (index) => {
       title: title,
       publishDate: publicationDate || uploadDate,
       publicationDate: publicationDate || uploadDate,
-    }
+    },
     meta: {
       date: publicationDate || uploadDate,
       raw: {
