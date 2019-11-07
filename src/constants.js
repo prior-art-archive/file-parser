@@ -13,8 +13,7 @@ const TextRequest = {
 	headers: { Accept: "text/plain" },
 }
 
-const IpfsOptions = { pin: true }
-const IpldOptions = { format: "dag-cbor", hashAlg: "sha2-256" }
+const IpfsOptions = { pin: false, onlyHash: true, rawLeaves: true }
 
 module.exports = {
 	DocumentIdKey,
@@ -22,5 +21,4 @@ module.exports = {
 	MetaRequest,
 	TextRequest,
 	IpfsOptions,
-	IpldOptions,
 }

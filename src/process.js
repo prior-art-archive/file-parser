@@ -1,11 +1,9 @@
 const crypto = require("crypto")
 const uuidv4 = require("uuid/v4")
 const request = require("request-promise-native")
-const IPFS = require("ipfs-http-client")
 const Sequelize = require("sequelize")
-const elasticsearch = require("elasticsearch")
-
-const assemble = require("./assemble")
+const IPFS = require("ipfs")
+// const elasticsearch = require("elasticsearch")
 
 const getMetadata = require("./metadata")
 
@@ -15,35 +13,32 @@ const {
 	MetaRequest,
 	TextRequest,
 	IpfsOptions,
-	IpldOptions,
 } = require("./constants")
 
-const { IPFS_HOST, DATABASE_URL, ELASTIC_URL, NODE_ENV } = process.env
+const ipfs = new IPFS({ init: { emptyRepo: true }, offline: true })
+
+const {
+	DATABASE_URL,
+	// ELASTIC_URL,
+	NODE_ENV,
+} = process.env
 const PROD = NODE_ENV === "production"
 console.log("environment:", NODE_ENV, PROD)
-
-const ipfs = IPFS({ host: IPFS_HOST, port: 443, protocol: "https" })
 
 const sequelize = new Sequelize(DATABASE_URL, {
 	logging: false,
 	dialectOptions: { ssl: true },
 })
 
-var elastic = new elasticsearch.Client({ host: ELASTIC_URL })
+// const elastic = ELASTIC_URL
+// 	? new elasticsearch.Client({ host: ELASTIC_URL })
+// 	: null
 
 const Document = sequelize.import("./models/Documents.js")
 const Assertion = sequelize.import("./models/Assertions.js")
 const Organization = sequelize.import("./models/Organizations.js")
 
 const getFileUrl = path => `https://assets.priorartarchive.org/${path}`
-
-ipfs
-	.id()
-	.then(id => console.log("connected to IPFS node with id", id))
-	.catch(err => {
-		console.error("Failed to connect to IPFS node", err)
-		process.exit(1)
-	})
 
 module.exports = async function(eventTime, Bucket, Key, data) {
 	const { Body, ContentLength, ContentType, Metadata } = data
@@ -89,37 +84,14 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 	}
 
 	// Now we have a bunch of stuff to do all at once!
-
-	// The original file and extracted text are added to IPFS as regular files (bytes).
-	// The metadata is added to *IPLD* as cbor-encoded JSON. This is more compact but also
-	// lets us address paths into the JSON object when we talk about provenance (!!!).
-
-	// `meta` is the actual JSON metadata object parsed from Tika;
-	// we return it from a second Promise.all. There's a `cid` intermediate
-	// value (an instance of Cid with a `toString()` method) that we subsequently
-	// pin to IPFS (bizarrely, dag.put() doesn't have a {pin: true} option, unlike .add()).
-	// The result we get from ipfs.pin.add is the same shape as the results we get from
-	// ipfs.add - an array of objects with a string `hash` property [{hash: string}].
 	const startTime = new Date() // prov:generatedAtTime for the metadata and transcript
-	const [
-		[document, created],
-		[text, [{ hash: textHash, size: textSize }]],
-		[meta, [{ hash: metaHash }]],
-	] = await Promise.all([
+	const [[document], text, meta] = await Promise.all([
 		// we need to create a new document, or get the existing one.
 		Document.findOrCreate({ where: { id: documentId }, defaults }),
-		// we need to post the file to Tika's text extraction service, and add the result to IPFS
-		request
-			.post({ formData, ...TextRequest })
-			.then(text =>
-				Promise.all([text, ipfs.add(ipfs.types.Buffer.from(text), IpfsOptions)])
-			),
-		// we also need to post the file to Tika's metadata service, and add the result to IPFS
-		request
-			.post({ formData, ...MetaRequest })
-			.then(body => JSON.parse(body))
-			.then(meta => Promise.all([meta, ipfs.dag.put(meta, IpldOptions)]))
-			.then(([meta, cid]) => Promise.all([meta, ipfs.pin.add(cid.toString())])),
+		// we need to post the file to Tika's text extraction service
+		request.post({ formData, ...TextRequest }),
+		// we need to post the file to Tika's metadata service
+		request.post({ formData, ...MetaRequest }).then(body => JSON.parse(body)),
 	])
 
 	const organization = await Organization.findByPk(organizationId)
@@ -128,9 +100,6 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 		console.error("Error parsing custom metadata:", error)
 		return {}
 	})
-
-	const dateString =
-		meta.PushDate || meta.Date || meta.UploadDate || meta.created
 
 	const legacyDateString =
 		customMetadata.PushDate || customMetadata.Date || customMetadata.UploadDate
@@ -171,61 +140,44 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 			console.error("Error posting to legacy Kafka:", error)
 		})
 
-	const generatedAtTime = startTime.toISOString()
-	const elasticIndex = {
-		title,
-		text,
-		fileUrl,
-		organizationId,
-		uploadDate: generatedAtTime,
-		contentLength: ContentLength,
-		contentType: ContentType,
-	}
+	// if (elastic !== null) {
+	// const generatedAtTime = startTime.toISOString()
+	// const dateString =
+	// 	meta.PushDate || meta.Date || meta.UploadDate || meta.created
+	// 	const elasticIndex = {
+	// 		title,
+	// 		text,
+	// 		fileUrl,
+	// 		organizationId,
+	// 		uploadDate: generatedAtTime,
+	// 		contentLength: ContentLength,
+	// 		contentType: ContentType,
+	// 	}
 
-	if (Date.parse(dateString)) {
-		const date = new Date(dateString)
-		elasticIndex.publicationDate = date.toISOString()
-	}
+	// 	if (Date.parse(dateString)) {
+	// 		const date = new Date(dateString)
+	// 		elasticIndex.publicationDate = date.toISOString()
+	// 	}
 
-	if (meta.hasOwnProperty("language")) {
-		elasticIndex.language = meta["langauge"]
-	}
+	// 	if (meta.hasOwnProperty("language")) {
+	// 		elasticIndex.language = meta["langauge"]
+	// 	}
+	// 	elastic.index({
+	// 		index: "documents",
+	// 		type: "doc",
+	// 		id: documentId,
+	// 		body: elasticIndex,
+	// 	})
+	// }
 
-	const assertionPayload = {
-		eventTime,
+	Assertion.create({
+		id: uuidv4(),
+		fileCid: fileHash,
 		documentId,
-		contentLength: ContentLength,
-		contentType: ContentType,
-		generatedAtTime,
-		fileUrl,
-		fileName,
-		fileHash,
-		textHash,
-		textSize: textSize + "B",
-		metadata: meta,
-		metadataHash: metaHash,
-	}
+		organizationId,
+	})
 
-	const [{ cid }] = await Promise.all([
-		assemble(assertionPayload)
-			.then(canonized => ipfs.add(ipfs.types.Buffer.from(canonized)))
-			.then(([{ hash: cid }]) =>
-				Assertion.create({
-					id: uuidv4(),
-					cid,
-					fileCid: fileHash,
-					documentId,
-					organizationId,
-				})
-			),
-		document.update({ title, fileUrl, fileName, contentType: ContentType }),
-		elastic.index({
-			index: "documents",
-			type: "doc",
-			id: documentId,
-			body: elasticIndex,
-		}),
-	])
+	document.update({ title, fileUrl, fileName, contentType: ContentType })
 
-	return { documentId, cid }
+	return { documentId }
 }
