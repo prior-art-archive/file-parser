@@ -2,7 +2,7 @@ const crypto = require("crypto")
 const uuidv4 = require("uuid/v4")
 const request = require("request-promise-native")
 const Sequelize = require("sequelize")
-const IPFS = require("ipfs")
+
 // const elasticsearch = require("elasticsearch")
 
 const getMetadata = require("./metadata")
@@ -12,10 +12,7 @@ const {
 	OriginalFilenameKey,
 	MetaRequest,
 	TextRequest,
-	IpfsOptions,
 } = require("./constants")
-
-const ipfs = new IPFS({ init: { emptyRepo: true }, offline: true })
 
 const {
 	DATABASE_URL,
@@ -56,6 +53,16 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 		.update(Body)
 		.digest("hex")
 
+	const fileCid = multihash.toB58String(
+		multihash.encode(
+			crypto
+				.createHash("sha256")
+				.update(Body)
+				.digest(),
+			"sha2-256"
+		)
+	)
+
 	// These are default properties for the Document in case we have to create one
 	const defaults = {
 		id: documentId,
@@ -66,14 +73,8 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 
 	const formData = { [fileName]: Body }
 
-	// we need to add the uploaded file to IPFS
-	const [{ hash: fileHash }] = await ipfs.add(
-		ipfs.types.Buffer.from(Body),
-		IpfsOptions
-	)
-
 	const previous = await Assertion.findOne({
-		where: { organizationId, fileCid: fileHash },
+		where: { organizationId, fileCid },
 	})
 
 	// If the there's already an assertion with the same file hash and organization ID,
@@ -172,7 +173,7 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 
 	Assertion.create({
 		id: uuidv4(),
-		fileCid: fileHash,
+		fileCid,
 		documentId,
 		organizationId,
 	})
