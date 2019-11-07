@@ -23,8 +23,7 @@
 		"aws-sdk": "^2.567.0",
 		"dist-exiftool": "^10.53.0",
 		"express": "^4.17.1",
-		"ipfs": "^0.39.0",
-		"jsonld": "^1.8.1",
+		"multihashes": "^0.4.15",
 		"node-exiftool": "^2.3.0",
 		"parse-head": "^1.2.0",
 		"pg": "^6.4.2",
@@ -35,6 +34,7 @@
 		"uuid": "^3.3.3"
 	},
 	"devDependencies": {
+		"jsonld": "^1.8.1",
 		"pg-hstore": "^2.3.3",
 		"sequelize-auto": "^0.4.29"
 	}

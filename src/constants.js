@@ -13,12 +13,9 @@ const TextRequest = {
 	headers: { Accept: "text/plain" },
 }
 
-const IpfsOptions = { pin: false, onlyHash: true, rawLeaves: true }
-
 module.exports = {
 	DocumentIdKey,
 	OriginalFilenameKey,
 	MetaRequest,
 	TextRequest,
-	IpfsOptions,
 }
