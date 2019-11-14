@@ -45,7 +45,7 @@ docker build -t priorartarchive/file-parser:prod .
 docker push priorartarchive/file-parser:prod
 ```
 
-Then head over to Elastic Beanstalk and upload a `Dockerrun.aws.json` file (containing URIs for the production database and elasticsearch, and referencing the `priorartarchive/priorart-file-parser:prod` image) to the `file-parser-prod` environment of the `FileParser` application.
+Then head over to Elastic Beanstalk and upload a `Dockerrun.aws.json` file (containing URIs for the production database and elasticsearch, and referencing the `priorartarchive/file-parser:prod` image) to the `tika-server-env` environment of the `TikaServer` application.
 
 ## Configuration
 
