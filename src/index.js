@@ -27,8 +27,10 @@ const app = express()
 app.use(express.json())
 
 app.post("/new", (req, res) => {
+	console.log("New file / request")
 	// Validate the request body
 	if (!validate(req.body)) {
+		console.error("AJV validation error")
 		return res.status(400).json({ error: "Request did not pass validation" })
 	}
 
@@ -41,6 +43,8 @@ app.post("/new", (req, res) => {
 			if (assertions !== undefined) {
 				console.log("successfully wrote assertions:", assertions)
 				res.status(200).json({ assertions })
+			} else {
+				console.log("Processing returned no assertions.")
 			}
 		})
 })
