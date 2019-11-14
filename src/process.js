@@ -171,8 +171,9 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 	// 	})
 	// }
 
+	const assertionId = uuidv4()
 	Assertion.create({
-		id: uuidv4(),
+		id: assertionId,
 		fileCid,
 		documentId,
 		organizationId,
@@ -180,5 +181,5 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 
 	document.update({ title, fileUrl, fileName, contentType: ContentType })
 
-	return { documentId }
+	return { documentId, assrtionId }
 }
