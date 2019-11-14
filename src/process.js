@@ -2,6 +2,7 @@ const crypto = require("crypto")
 const uuidv4 = require("uuid/v4")
 const request = require("request-promise-native")
 const Sequelize = require("sequelize")
+const multihash = require("multihashes")
 
 // const elasticsearch = require("elasticsearch")
 

@@ -1,4 +1,5 @@
 node_modules/
 Dockerrun.aws.dev.json
 Dockerrun.aws.prod.json
+Dockerrun.aws.prod.v1.json
 models.sh
