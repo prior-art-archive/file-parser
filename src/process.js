@@ -182,5 +182,5 @@ module.exports = async function(eventTime, Bucket, Key, data) {
 
 	document.update({ title, fileUrl, fileName, contentType: ContentType })
 
-	return { documentId, assrtionId }
+	return { documentId, assertionId }
 }
