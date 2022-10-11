@@ -34,7 +34,7 @@
 		"uuid": "^3.3.3"
 	},
 	"devDependencies": {
-		"jsonld": "^1.8.1",
+		"jsonld": "^8.1.0",
 		"pg-hstore": "^2.3.3",
 		"sequelize-auto": "^0.4.29"
 	}
